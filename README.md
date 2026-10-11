@@ -16,6 +16,8 @@ You walk around three places: the ruined (or rebuilt) Bodleian in the present, a
 
 Progress is saved in your browser, and the casebook lets you restore any earlier timeline.
 
+Sound is generated in the browser (no audio files): footsteps, a whoosh when you travel, a chime when the present gets better or worse, and bells when you save the library. Use the Sound button to turn it off.
+
 ## Chapter one
 
 1. **The Founder's Dinner, 1887.** Six guests sit along one side of a table. Neighbours talk, and Mrs Ellery introduces whoever sits either side of her.
