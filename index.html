@@ -1,0 +1,631 @@
+<title>The Founder's Dinner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=Alegreya+Sans:wght@400;500;700&display=swap">
+<style>
+/* Layout: a night-time library. Fragment across the top, plan of the Bodleian on the left,
+   shelves and casebook on the right. One deliberate dark look in both host themes. */
+:root{
+  color-scheme: dark;
+  --ink:#121826;        /* night sky over Broad Street */
+  --ink-2:#1b2335;      /* panel */
+  --ink-3:#26304a;      /* raised */
+  --line:#34405e;
+  --gilt:#d4a94e;       /* gold leaf from Duke Humfrey's ceiling */
+  --gilt-soft:#8f7642;
+  --rubric:#c8553d;     /* manuscript red: damage */
+  --verdure:#7fae8a;    /* standing */
+  --vellum:#efe4cc;     /* book pages */
+  --vellum-ink:#2b2418;
+  --text:#e3e6ee;
+  --muted:#9aa3b8;
+  --f-display:"IM Fell English SC","IM Fell English",Georgia,serif;
+  --f-book:"IM Fell English",Georgia,"Times New Roman",serif;
+  --f-ui:"Alegreya Sans","Gill Sans","Segoe UI",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{background:var(--ink);color:var(--text)}
+body{font-family:var(--f-ui);font-size:16px;line-height:1.5;padding-inline:16px;padding-block:20px 48px}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+h1,h2,h3{font-family:var(--f-display);font-weight:400;text-wrap:balance;margin:0;letter-spacing:.01em}
+h1{font-size:clamp(1.8rem,4vw,2.6rem);color:var(--gilt)}
+h2{font-size:1.45rem;color:var(--gilt)}
+h3{font-size:1.15rem}
+p{margin:0}
+button{font:inherit;cursor:pointer}
+button:focus-visible,.seat:focus-visible,.cell:focus-visible,.room:focus-visible{outline:2px solid var(--gilt);outline-offset:2px}
+.label{font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.btn{background:var(--gilt);color:var(--ink);border:0;border-radius:3px;padding:10px 18px;font-weight:700;letter-spacing:.02em}
+.btn:hover{filter:brightness(1.08)}
+.btn[disabled]{background:var(--ink-3);color:var(--muted);cursor:not-allowed}
+.btn.ghost{background:transparent;color:var(--gilt);border:1px solid var(--gilt-soft)}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.muted{color:var(--muted)}
+.panel{background:var(--ink-2);border:1px solid var(--line);border-radius:4px;padding:18px;display:flex;flex-direction:column;gap:12px;min-width:0}
+
+/* header */
+.top{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:14px}
+.top .sub{font-family:var(--f-book);font-style:italic;color:var(--muted)}
+.meter{display:flex;gap:6px;align-items:center}
+.meter i{width:22px;height:8px;border-radius:1px;background:var(--rubric);display:block}
+.meter i.ok{background:var(--verdure)}
+
+/* fragment */
+.fragment{background:var(--vellum);color:var(--vellum-ink);font-family:var(--f-book);font-size:1.2rem;line-height:1.55;padding:18px 22px;border-radius:2px;position:relative;
+  clip-path:polygon(0 6%,4% 0,30% 3%,52% 0,78% 4%,100% 0,98% 40%,100% 100%,70% 96%,44% 100%,18% 95%,0 100%,2% 50%)}
+.fragment .tag{font-family:var(--f-ui);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:#7b6a4c;display:block;margin-bottom:4px}
+.fragment b{font-weight:400;background:rgba(200,85,61,.18)}
+.fragment.saved{background:#dfe8d6}
+
+/* present layout */
+.grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:20px}
+@media (max-width:860px){.grid{grid-template-columns:minmax(0,1fr)}}
+.map svg{width:100%;height:auto;display:block}
+.room{cursor:pointer}
+.room .shape{fill:var(--ink-3);stroke:var(--gilt-soft);stroke-width:1.5;transition:fill .2s}
+.room:hover .shape,.room.sel .shape{fill:#33405f;stroke:var(--gilt)}
+.room.lost .shape{fill:url(#hatch);stroke:var(--rubric)}
+.room text{fill:var(--text);font-family:var(--f-ui);font-size:13px;pointer-events:none;paint-order:stroke;stroke:var(--ink);stroke-width:4px;stroke-linejoin:round}
+.room text.st{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+.roomchips{display:flex;flex-wrap:wrap;gap:6px}
+.roomchips button{background:var(--ink-3);color:var(--text);border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:.85rem}
+.roomchips button.lost{border-color:var(--rubric);color:#f0b3a5}
+.roomchips button.sel{border-color:var(--gilt);color:var(--gilt)}
+.room text.st.ok{fill:var(--verdure)} .room text.st.bad{fill:var(--rubric)}
+.room .newdot{fill:var(--gilt)}
+.streets text{fill:var(--muted);font-family:var(--f-book);font-style:italic;font-size:11px}
+.streets path{stroke:var(--line);stroke-width:1;fill:none;stroke-dasharray:3 4}
+
+.shelf{display:flex;flex-direction:column;gap:8px}
+.book{display:flex;gap:12px;align-items:flex-start;text-align:left;background:var(--ink-3);border:1px solid var(--line);border-radius:3px;padding:10px 12px;color:var(--text);width:100%}
+.book:hover{border-color:var(--gilt-soft)}
+.book .spine{flex:none;width:8px;align-self:stretch;border-radius:1px;background:var(--gilt-soft)}
+.book.k-diary .spine{background:#6f8fb8} .book.k-letter .spine{background:#9c7fb0} .book.k-report .spine{background:var(--rubric)} .book.k-record .spine{background:#8a9479}
+.book .t{font-family:var(--f-book);font-size:1.05rem;line-height:1.3}
+.book .m{font-size:.8rem;color:var(--muted)}
+.book .new{font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink);background:var(--gilt);border-radius:2px;padding:1px 6px;margin-left:6px;vertical-align:2px}
+.book.read .t{color:#c9cdd8}
+.empty{font-family:var(--f-book);font-style:italic;color:var(--muted);padding:6px 0}
+.ashes{color:var(--rubric);font-family:var(--f-book);font-style:italic}
+
+.travel{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.trip{background:var(--ink-3);border:1px solid var(--line);border-radius:4px;padding:14px;display:flex;flex-direction:column;gap:8px;text-align:left;color:var(--text)}
+.trip:hover:not([disabled]){border-color:var(--gilt)}
+.trip[disabled]{opacity:.5;cursor:not-allowed}
+.trip .yr{font-family:var(--f-display);color:var(--gilt);font-size:1.6rem;line-height:1;font-variant-numeric:oldstyle-nums}
+.trip .role{font-size:.85rem;color:var(--muted)}
+.trip .flag{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase}
+.flag.bad{color:var(--rubric)} .flag.ok{color:var(--verdure)}
+
+.log{display:flex;flex-direction:column;gap:6px;max-height:260px;overflow:auto}
+.log .entry{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;font-size:.88rem;padding:6px 8px;border-radius:3px;background:var(--ink-3)}
+.log .entry.cur{outline:1px solid var(--gilt-soft)}
+.log .n{font-variant-numeric:tabular-nums;color:var(--muted)}
+.log .what{min-width:0;overflow-wrap:anywhere}
+.log button{background:none;border:1px solid var(--line);color:var(--gilt);border-radius:3px;padding:2px 8px;font-size:.8rem}
+textarea{width:100%;min-height:110px;background:var(--ink);color:var(--text);border:1px solid var(--line);border-radius:3px;padding:10px;font:inherit;font-size:.92rem;resize:vertical}
+details summary{cursor:pointer;color:var(--gilt)}
+.hint{font-family:var(--f-book);font-size:1.02rem;border-left:2px solid var(--gilt-soft);padding-left:10px}
+
+/* planners */
+.briefing{font-family:var(--f-book);font-size:1.08rem;max-width:68ch}
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px}
+.rule{background:var(--ink-3);border-radius:3px;padding:10px 12px;font-size:.92rem}
+.rule b{color:var(--gilt);font-weight:500}
+.table{position:relative;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;padding:26px 16px;background:linear-gradient(#3a2a1c,#2e2116);border-radius:6px;border:1px solid #5a4330}
+.table::before{content:"head of table";position:absolute;left:16px;top:6px;font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:#b49a78}
+@media (max-width:700px){.table{grid-template-columns:minmax(0,1fr)}}
+.seat{background:var(--vellum);color:var(--vellum-ink);border:2px solid transparent;border-radius:3px;padding:10px 8px;min-height:92px;display:flex;flex-direction:column;gap:2px;text-align:center;justify-content:center;font-family:var(--f-book);cursor:pointer;width:100%}
+.seat .no{font-family:var(--f-ui);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:#7b6a4c}
+.seat .nm{font-size:1.08rem;line-height:1.2}
+.seat .ds{font-family:var(--f-ui);font-size:.75rem;color:#6a5c45}
+.seat.sel{border-color:var(--gilt);box-shadow:0 0 0 3px rgba(212,169,78,.35)}
+.seat.fixed{cursor:not-allowed;background:#e2d6b9}
+.talks{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:.85rem;background:var(--ink-3);border:1px solid var(--line);border-radius:999px;padding:3px 10px}
+.chip.intro{border-style:dashed;border-color:var(--gilt-soft)}
+.prog{display:grid;grid-template-columns:auto minmax(0,1fr) minmax(0,1fr);gap:8px;align-items:stretch}
+.prog .h{font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);align-self:end;padding:0 4px}
+.prog .sess{font-family:var(--f-display);color:var(--gilt);font-size:1.05rem;align-self:center;padding-right:6px}
+.cell{background:var(--vellum);color:var(--vellum-ink);border:2px solid transparent;border-radius:3px;padding:10px;text-align:left;font-family:var(--f-book);cursor:pointer;width:100%;display:flex;flex-direction:column;gap:2px}
+.cell .nm{font-size:1.05rem}
+.cell .tk{font-style:italic;font-size:.9rem;color:#5c4f3a}
+.cell.sel{border-color:var(--gilt);box-shadow:0 0 0 3px rgba(212,169,78,.35)}
+.warn{color:var(--rubric);font-size:.92rem}
+.letters{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px}
+.letter{background:var(--ink-3);border-radius:3px;padding:10px 12px;font-family:var(--f-book);font-size:1rem}
+.letter .who{font-family:var(--f-ui);font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--gilt)}
+
+/* modal */
+.scrim{position:fixed;inset:0;background:rgba(8,10,18,.72);display:flex;align-items:center;justify-content:center;padding:16px;z-index:10}
+.page{background:var(--vellum);color:var(--vellum-ink);max-width:620px;width:100%;max-height:86vh;overflow:auto;border-radius:2px;padding:28px 30px;font-family:var(--f-book);font-size:1.12rem;line-height:1.6;box-shadow:0 20px 60px rgba(0,0,0,.5);display:flex;flex-direction:column;gap:12px}
+.page h3{font-family:var(--f-display);font-size:1.35rem;color:var(--vellum-ink)}
+.page .by{font-style:italic;color:#6a5c45}
+.page .close{align-self:flex-end;font-family:var(--f-ui);background:var(--vellum-ink);color:var(--vellum);border:0;border-radius:3px;padding:6px 14px}
+.page p+p{text-indent:1.2em}
+
+/* interlude */
+.interlude{max-width:70ch;margin:0 auto;display:flex;flex-direction:column;gap:14px;font-family:var(--f-book);font-size:1.15rem}
+.interlude .ev{border-left:2px solid var(--line);padding-left:12px}
+.interlude .ev.bad{border-color:var(--rubric)}
+.title-screen{min-height:70vh;display:flex;flex-direction:column;gap:18px;justify-content:center;max-width:70ch;margin:0 auto}
+.title-screen h1{font-size:clamp(2.4rem,7vw,4rem);line-height:1.05}
+.title-screen .lede{font-family:var(--f-book);font-size:1.25rem}
+@media (prefers-reduced-motion:no-preference){.fade{animation:fade .5s ease both}@keyframes fade{from{opacity:.4;transform:translateY(4px)}to{opacity:1;transform:none}}}
+</style>
+
+<div class="wrap" id="app"></div>
+
+<script>
+(function(){
+// ---------- data ----------
+const P = {
+  A:{name:"Prof. Ashworth", full:"Professor Hugh Ashworth", desc:"Master of the college"},
+  B:{name:"Dr Bell", full:"Dr Lionel Bell", desc:"natural philosopher"},
+  C:{name:"Rev. Carrow", full:"The Rev. Silas Carrow", desc:"vicar of St Ebbe's"},
+  D:{name:"Mr Dunmore", full:"Mr Walter Dunmore", desc:"engineer, Swindon works"},
+  E:{name:"Mrs Ellery", full:"Mrs Augusta Ellery", desc:"hostess and widow"},
+  F:{name:"Miss Fenwick", full:"Miss Ada Fenwick", desc:"binder, Bodleian bindery"},
+  H:{name:"Dr Hale", full:"Dr Edmund Hale", desc:"astronomer", talk:"The Great Comet of 1887"},
+  Q:{name:"Miss Quill", full:"Miss Harriet Quill", desc:"geologist", talk:"Meteorites of the Mendips"},
+  R:{name:"Mr Rao", full:"Mr Vikram Rao", desc:"mathematician", talk:"On Calculating Machines"},
+  Pl:{name:"Lady Pell", full:"Lady Constance Pell", desc:"botanist", talk:"The Heating of Glasshouses"}
+};
+P.C.talk="Design in the Natural World"; P.D.talk="A Compact Steam Engine (with demonstration)";
+const ROOMS = [
+  {id:"clar", name:"Clarendon Building"},
+  {id:"duke", name:"Duke Humfrey's Library"},
+  {id:"div",  name:"Divinity School"},
+  {id:"tower",name:"Old Schools Quadrangle"},
+  {id:"rad",  name:"Radcliffe Camera"}
+];
+const ROOMNAME = Object.fromEntries(ROOMS.map(r=>[r.id,r.name]));
+const HAZ = {
+  dinner:{"C-D":"ALL","B-D":"rad","A-D":"tower","E-F":"duke"},
+  bath:{"C-D":"ALL","D-Pl":"div","Pl-Q":"clar"}
+};
+// who each Bath speaker is keen to hear, in no particular order
+const KEEN = {C:["D","H"], D:["R","Pl"], H:["Q"], Q:["D","H"], R:["Pl","Q"], Pl:["H","Q"]};
+const HIST_SEATS = ["A","B","E","C","D","F"];
+// schedule cells: [Morning Ball, Morning Octagon, Afternoon Ball, Afternoon Octagon, Evening Ball, Evening Octagon]
+const HIST_SCHED = ["Q","H","D","R","Pl","C"];
+const SESS = ["Morning","Afternoon","Evening"];
+
+const key=(a,b)=>[a,b].sort().join("-");
+const has=(set,a,b)=>set.has(key(a,b));
+
+// ---------- simulation ----------
+function dinnerMeet(s){
+  const m=new Map();
+  for(let i=0;i<5;i++) m.set(key(s[i],s[i+1]),"neighbours");
+  const e=s.indexOf("E");
+  if(e>0&&e<5){const k=key(s[e-1],s[e+1]); if(!m.has(k)) m.set(k,"introduced by Mrs Ellery");}
+  return m;
+}
+function bathMeet(c){
+  const m=new Map(); const where=[];
+  for(let s=0;s<3;s++){
+    const ball=c[2*s], oct=c[2*s+1], pump=[], w={ball,oct,toBall:[],toOct:[],pump};
+    for(const x of c){
+      if(x===ball||x===oct) continue;
+      if(KEEN[x].includes(ball)){w.toBall.push(x); if(!m.has(key(x,ball))) m.set(key(x,ball),SESS[s].toLowerCase()+" talk");}
+      else if(KEEN[x].includes(oct)){w.toOct.push(x); if(!m.has(key(x,oct))) m.set(key(x,oct),SESS[s].toLowerCase()+" talk");}
+      else pump.push(x);
+    }
+    for(let i=0;i<pump.length;i++)for(let j=i+1;j<pump.length;j++){const k=key(pump[i],pump[j]); if(!m.has(k)) m.set(k,"Pump Room, "+SESS[s].toLowerCase());}
+    where.push(w);
+  }
+  return {m,where};
+}
+function simulate(st){
+  const dm=dinnerMeet(st.seats);
+  const dinnerEngine=dm.has("C-D");
+  const bm = (!dinnerEngine) ? bathMeet(st.sched).m : new Map();
+  const engine = dinnerEngine ? "dinner" : (bm.has("C-D") ? "bath" : null);
+  const lost=new Set(), cause={};
+  for(const [k] of dm){const h=HAZ.dinner[k]; if(h&&h!=="ALL"){lost.add(h);cause[h]="dinner";}}
+  for(const [k] of bm){const h=HAZ.bath[k]; if(h&&h!=="ALL"){lost.add(h);cause[h]="bath";}}
+  return {dm,bm,engine,lost,cause,bathOpen:!dinnerEngine};
+}
+
+// ---------- the books ----------
+// where: room id or "archive" (college archive: private papers survive everything)
+// ruin: true if it survives even when the whole library is destroyed
+const ITEMS = [
+  {id:"menu",kind:"record",where:"archive",ruin:true,title:"Founder's Dinner, 1887: menu and places",by:"College kitchen",
+   when:()=>true,text:[
+   "Twelfth of November, 1887. Clear soup. Turbot. Saddle of mutton. Founder's pudding. Stilton.",
+   "At the Master's table, one long side, six places: Prof. Hugh Ashworth (the Master), Dr Lionel Bell, the Rev. Silas Carrow, Mr Walter Dunmore, Mrs Augusta Ellery, Miss Ada Fenwick."]},
+  {id:"pruett",kind:"record",where:"archive",ruin:true,title:"Mrs Pruett's kitchen book",by:"Mrs Pruett, cook-housekeeper",
+   when:()=>true,text:[
+   "The Master sits at the head, always, in the first place. Do not argue with him about it.",
+   "At that table they talk to whoever is beside them and nobody else. The table is too long and the Master too loud.",
+   "Mind where you put Mrs Ellery. She introduces whoever sits on her left to whoever sits on her right, every single time, and by the Stilton they are thick as thieves."]},
+  {id:"register",kind:"record",where:"archive",ruin:true,title:"College register of guests, 1887",by:"The Bursar",
+   when:()=>true,text:[
+   "Ashworth, Prof. H. Master. Classicist. Forever wanting to modernise the library.",
+   "Bell, Dr L. Natural philosopher. Writes on heating and ventilation.",
+   "Carrow, Rev. S. Vicar of St Ebbe's. Keeps a workshop behind the vicarage; the neighbours complain of smoke.",
+   "Dunmore, Mr W. Engineer, from the Great Western works at Swindon. A guest of the Master.",
+   "Ellery, Mrs A. Widow. Knows everyone, and insists that everyone know everyone else.",
+   "Fenwick, Miss A. Binder at the Bodleian bindery."]},
+
+  // ---- dinner pairs ----
+  {id:"lowe1",kind:"diary",where:"archive",ruin:true,title:"Diary of James Lowe, 13 Nov 1887",by:"James Lowe, undergraduate",
+   when:c=>c.dm.has("C-D"),text:[
+   "Waited at the Master's table for my shilling. The clergyman and the engineer scribbled on napkins together all through pudding. Something about an engine that could ‘clear a room of paper in a minute’.",
+   "The engineer said he had come to Oxford on purpose to find a man like that. I did not care for the way they laughed."]},
+  {id:"radfire",kind:"report",where:"archive",ruin:false,title:"Inquiry into the Radcliffe Camera Fire, 1903",by:"Curators of the Bodleian",
+   when:c=>c.dm.has("B-D"),text:[
+   "The fire began in the basement heating plant, a novel steam system designed jointly by Dr Lionel Bell and Mr Walter Dunmore.",
+   "Both men told the committee they first sketched the system on the tablecloth as neighbours at the Founder's Dinner of 1887. The dome and the upper gallery were lost."]},
+  {id:"towerfall",kind:"report",where:"archive",ruin:false,title:"The Fall of the Tower of the Five Orders, 1899",by:"Oxford Architectural Society",
+   when:c=>c.dm.has("A-D"),text:[
+   "The Master, Prof. Ashworth, long wished to raise books to the upper floors by machine. After a long conversation with Mr Dunmore at the Founder's Dinner he commissioned a steam book-lift inside the Tower.",
+   "In March 1899 the lift's counterweights tore through the stair. The Tower and the east range of the Old Schools Quadrangle came down with it."]},
+  {id:"dukerot",kind:"report",where:"archive",ruin:false,title:"Survey of Duke Humfrey's Library, 1912",by:"Keeper of Western Manuscripts",
+   when:c=>c.dm.has("E-F"),text:[
+   "Miss Ada Fenwick, the library's only skilled binder, left Oxford in 1888 to become Mrs Ellery's companion in London. The two had been seated together at the Founder's Dinner and were inseparable after.",
+   "No binder replaced her. Damp and mould have taken the medieval bindings, and the library is closed to readers."]},
+  {id:"memoir",kind:"book",where:"duke",title:"Fifty Years at High Table (1902)",by:"Hugh Ashworth",
+   when:c=>c.dm.has("A-E"),text:["Dedication: To Mrs Augusta Ellery, whose conversation at the Founder's Dinner changed my mind about almost everything."]},
+  {id:"bellfellow",kind:"book",where:"tower",title:"Proceedings of the Ashmolean Society, 1888",by:"Various hands",
+   when:c=>c.dm.has("A-B"),text:["Dr Bell, newly elected Fellow on the Master's personal recommendation, read a paper on the ventilation of libraries.",
+   "He added that he had heard of a Swindon engineer with bold ideas on steam heating, and hoped one day to meet him."]},
+  {id:"sermons",kind:"book",where:"div",title:"Sermons Preached in the College Chapel (1889)",by:"Silas Carrow",
+   when:c=>c.dm.has("A-C"),text:["Preface: I owe the chaplaincy to the Master, who offered it to me between the soup and the fish at the Founder's Dinner."]},
+  {id:"binder",kind:"record",where:"duke",title:"Bodleian staff book, 1888",by:"Bodley's Librarian",
+   when:c=>c.dm.has("A-F"),text:["Miss A. Fenwick appointed Senior Binder at the Master's request. He spoke with her at the Founder's Dinner and was much impressed."]},
+  {id:"lowe2",kind:"diary",where:"archive",ruin:true,title:"Diary of James Lowe, 14 Nov 1887",by:"James Lowe, undergraduate",
+   when:c=>c.dm.has("B-C"),text:["Dr Bell and the Reverend argued about Darwin through three courses. The Reverend called science ‘a sort of engineering of God's furniture’ and said he meant to build some furniture of his own. Bell went quite purple."]},
+  {id:"salon",kind:"letter",where:"archive",ruin:true,title:"Letters of Augusta Ellery, I",by:"Augusta Ellery",
+   when:c=>c.dm.has("B-E"),text:["Dr Bell came to my Thursday at last. He talks of nothing but air and pipes, poor man, and wants to be introduced to some engineer or other."]},
+  {id:"gaslight",kind:"book",where:"rad",title:"On the Effect of Gaslight upon Leather (1891)",by:"A. Fenwick and L. Bell",
+   when:c=>c.dm.has("B-F"),text:["We met at the Founder's Dinner, where Miss Fenwick explained why the gas was rotting the Bodleian's bindings. This paper is the result."]},
+  {id:"hymns",kind:"book",where:"div",title:"Hymns for Working Men (1890)",by:"S. Carrow, with A. Ellery",
+   when:c=>c.dm.has("C-E"),text:["Preface: Mrs Ellery would introduce me to every engineer in England if she could. I have asked her particularly to find me one who understands furnaces."]},
+  {id:"notebooks",kind:"book",where:"duke",title:"Notebooks of the Rev. S. Carrow, bound 1888",by:"Bound by A. Fenwick",
+   when:c=>c.dm.has("C-F"),text:["Miss Fenwick bound these at Mr Carrow's request after they spoke at dinner. Most pages hold drawings of furnaces, fans and a ‘great consuming engine’.",
+   "A note in the margin: ‘It wants a practical man. A railway man?’"]},
+  {id:"fountain",kind:"letter",where:"archive",ruin:true,title:"Letters of Augusta Ellery, II",by:"Augusta Ellery",
+   when:c=>c.dm.has("D-E"),text:["Mr Dunmore has built me a steam fountain for the garden. A sweet man. He asks me to find him a clergyman with ideas, of all things."]},
+  {id:"treatise",kind:"book",where:"duke",title:"A Treatise on Bookbinding (1893)",by:"Ada Fenwick",
+   when:c=>c.dm.has("D-F"),text:["Acknowledgements: To Mr Walter Dunmore, my neighbour at the Founder's Dinner, who built me a press so gentle it never cracked a spine. The only engine I have ever trusted near a book."]},
+  {id:"lowe3",kind:"diary",where:"archive",ruin:true,title:"Diary of James Lowe, spring 1888",by:"James Lowe, undergraduate",
+   when:c=>c.bathOpen,text:["The Reverend Carrow has gone off to the British Association meeting at Bath. That engineer of the Master's, Dunmore, is giving a paper there too.",
+   "Odd. They never spoke a word to each other at the Founder's Dinner."]},
+
+  // ---- Bath pairs ----
+  {id:"kitty",kind:"letter",where:"archive",ruin:true,title:"Letter from Kitty Ellery, Bath, Sept 1888",by:"Kitty Ellery, Mrs Ellery's niece",
+   when:c=>c.bm.has("C-D"),text:["The clergyman from Oxford sat in the very front row for Mr Dunmore's engine, and afterwards they went off arm in arm, talking of ‘the consumption of paper’. I thought it a joke."]},
+  {id:"divfall",kind:"report",where:"archive",ruin:false,title:"The Divinity School Disaster, 1896",by:"Curators of the Bodleian",
+   when:c=>c.bm.has("D-Pl"),text:["Lady Pell's winter garden, a glasshouse built against the north wall of the Divinity School, was heated by a boiler of Mr Dunmore's design. They met at Bath in 1888, where he heard her paper on glasshouses.",
+   "In January 1896 the boiler burst and the great vault fell."]},
+  {id:"clarstone",kind:"report",where:"archive",ruin:false,title:"The Stonework of the Clarendon Building, 1921",by:"University Surveyor",
+   when:c=>c.bm.has("Pl-Q"),text:["In 1890 the building was refaced with stone from a Headington quarry reopened by Miss Harriet Quill, paid for by Lady Pell. The two met at Bath in 1888, at Miss Quill's talk.",
+   "Headington stone is soft. By 1920 the front had crumbled away and the building was taken down."]},
+  {id:"heavens",kind:"book",where:"div",title:"Design in the Heavens (1890)",by:"S. Carrow and E. Hale",
+   when:c=>c.bm.has("C-H"),text:["A dialogue between a clergyman and an astronomer, begun at Bath in 1888. Harmless and rather dull."]},
+  {id:"calc",kind:"book",where:"clar",title:"A Steam Calculating Machine for the Catalogue (1892)",by:"W. Dunmore and V. Rao",
+   when:c=>c.bm.has("D-R"),text:["Mr Dunmore heard Mr Rao at Bath and built his machine. It still prints the Bodleian's shelf lists, slowly, and has never once caught fire."]},
+  {id:"meteor",kind:"book",where:"rad",title:"Meteorites of the Mendips (1891)",by:"H. Quill and E. Hale",
+   when:c=>c.bm.has("H-Q"),text:["Dr Hale attended Miss Quill's paper at Bath and offered his telescope. This volume, with fine plates, followed."]},
+  {id:"pumps",kind:"book",where:"tower",title:"Draining the Deep Quarries (1890)",by:"Harriet Quill",
+   when:c=>c.bm.has("D-Q"),text:["With thanks to Mr Dunmore, whose engine I saw at Bath and whose pumps now keep my pits dry."]},
+  {id:"ferns",kind:"book",where:"rad",title:"Statistics of the British Ferns (1893)",by:"C. Pell and V. Rao",
+   when:c=>c.bm.has("Pl-R"),text:["Mr Rao counted ferns for three summers after hearing Lady Pell at Bath. A useful book."]},
+  {id:"strata",kind:"book",where:"clar",title:"On the Mathematics of Strata (1894)",by:"V. Rao and H. Quill",
+   when:c=>c.bm.has("Q-R"),text:["Begun at Bath in 1888, when Mr Rao heard Miss Quill and asked a question she could not answer for six years."]},
+  {id:"almanac",kind:"book",where:"duke",title:"A Gardener's Almanac of the Stars (1892)",by:"C. Pell and E. Hale",
+   when:c=>c.bm.has("H-Pl"),text:["When to sow by the comets. Lady Pell and Dr Hale met at Bath; neither should have been allowed near the other's subject."]},
+  {id:"chronicle",kind:"record",where:"archive",ruin:true,title:"Bath Chronicle, society column, Sept 1888",by:"Bath Chronicle",
+   when:c=>c.bathOpen,dyn:c=>{
+     const lines=[...c.bm.entries()].map(([k,how])=>{const [a,b]=k.split("-");return P[a].name+" and "+P[b].name+" ("+how+")";});
+     return ["Among the British Association's visitors, the following were seen in company:", lines.join("; ")+"."];
+   }}
+];
+
+// ---------- hints ----------
+function hintsFor(sim){
+  if(sim.engine==="dinner") return [
+    "Mrs Pruett's kitchen book says guests only talk to the people beside them. Find the two who must never be neighbours.",
+    "Compare James Lowe's diary with the college register. Which guest is a clergyman, and which is the engineer?",
+    "Keep Rev. Carrow and Mr Dunmore apart. Remember that Mrs Ellery introduces whoever sits either side of her."];
+  if(sim.engine==="bath") return [
+    "The Reverend is keen to hear Mr Dunmore. Nobody can attend a talk in the session where they are speaking.",
+    "Put Rev. Carrow in the same session as Mr Dunmore."];
+  const d=[...sim.lost].filter(r=>sim.cause[r]==="dinner"), b=[...sim.lost].filter(r=>sim.cause[r]==="bath");
+  if(d.length) return [
+    "Every lost room has a report in the College Archive naming the pair responsible.",
+    "Mr Dunmore is dangerous beside almost everyone. Miss Fenwick's Treatise on Bookbinding suggests the one person he is safe with.",
+    "Seat Mr Dunmore at the far end with Miss Fenwick beside him, and keep Mrs Ellery away from Miss Fenwick."];
+  if(b.length) return [
+    "When a speaker is keen on both talks in a session, they choose the Ball Room. You can use a Ball Room talk to steer someone away from the Octagon.",
+    "Lady Pell is keen on Dr Hale and Miss Quill. Mr Dunmore is keen on Mr Rao and Lady Pell.",
+    "Put Dr Hale in the Ball Room in Miss Quill's session, and Mr Rao in the Ball Room in Lady Pell's session."];
+  return [];
+}
+
+// ---------- state ----------
+const SAVE="bodleian-founders-dinner-v1";
+const fresh=()=>({screen:"title",seats:HIST_SEATS.slice(),sched:HIST_SCHED.slice(),trips:0,bathKnown:false,log:[],seen:{},read:{},prevVisible:null,room:"archive",notes:"",hint:0,sel:null,draft:null,interlude:null});
+let S;
+try{S=Object.assign(fresh(),JSON.parse(localStorage.getItem(SAVE)||"null")||{});}catch(e){S=fresh();}
+if(window.claude&&window.claude.hot&&window.claude.hot.data&&window.claude.hot.data.S) S=window.claude.hot.data.S;
+if(window.claude&&window.claude.hot&&window.claude.hot.snapshot) window.claude.hot.snapshot(()=>({S}));
+function save(){try{localStorage.setItem(SAVE,JSON.stringify(S));}catch(e){}}
+
+function visible(sim){
+  const c={dm:sim.dm,bm:sim.bm,bathOpen:sim.bathOpen&&S.bathKnown};
+  return ITEMS.filter(it=>{
+    if(!it.when(c)) return false;
+    if(sim.engine) return !!it.ruin;
+    return it.where==="archive"||!sim.lost.has(it.where);
+  });
+}
+
+// ---------- rendering ----------
+const app=document.getElementById("app");
+const esc=s=>String(s).replace(/[&<>"]/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[ch]));
+function render(){
+  save();
+  ({title:renderTitle,present:renderPresent,dinner:renderDinner,bath:renderBath,interlude:renderInterlude,won:renderWon})[S.screen]();
+}
+
+function renderTitle(){
+  app.innerHTML=`<div class="title-screen fade">
+    <span class="label">Oxford, the present day</span>
+    <h1>The Founder's Dinner</h1>
+    <p class="lede">The Bodleian Library is gone. Where Duke Humfrey's Library stood there is ash, and in the ash one scrap of a page.</p>
+    <p class="muted">You can slip back into the past, but only in humble jobs: laying places in a college kitchen, copying out a conference programme. You cannot stop anyone by force. All you can change is who meets whom. Every change ripples forward, and the books on the shelves will tell you what you did.</p>
+    <div class="row"><button class="btn" id="go">Pick up the fragment</button>${S.trips?`<button class="btn ghost" id="reset">Start again</button>`:""}</div>
+  </div>`;
+  app.querySelector("#go").onclick=()=>{S.screen="present";render();};
+  const r=app.querySelector("#reset"); if(r) r.onclick=()=>{S=fresh();S.screen="present";render();};
+}
+
+function fragmentHTML(sim){
+  if(!sim.engine && sim.lost.size===0) return `<div class="fragment saved fade"><span class="tag">Page from the Bodleian accessions register</span>The page is whole now, and dull: a list of books received in 1891. Nothing about any engine.</div>`;
+  if(!sim.engine) return `<div class="fragment fade"><span class="tag">The fragment</span>The page has changed. It no longer mentions any engine. It is a list of repairs: ${[...sim.lost].map(r=>esc(ROOMNAME[r])).join(", ")}. Something you did, or failed to do, still damages the library.</div>`;
+  const where = sim.engine==="dinner" ? "first met at the Founder's Dinner of 1887" : "first met at Bath in 1888, at the British Association meeting";
+  const a = S.trips>=1 ? "Mr A, <b>a man of the cloth</b>," : "Mr A";
+  const b = S.trips>=3 ? "Mr B, <b>an engineer</b>," : "Mr B";
+  return `<div class="fragment fade"><span class="tag">The fragment</span>… it was ${a} and ${b} who ${where}, and between them built the engine that … every volume in the place, and the building after …</div>`;
+}
+
+function mapSVG(sim,newByRoom){
+  const st=id=>sim.engine?"lost":(sim.lost.has(id)?"lost":"ok");
+  const room=(id,shape,lx,ly)=>{
+    const s=st(id), sel=S.room===id?" sel":"";
+    return `<g class="room ${s==="lost"?"lost":""}${sel}" data-room="${id}" tabindex="0" role="button" aria-label="${esc(ROOMNAME[id])}">
+      ${shape}<text x="${lx}" y="${ly}" text-anchor="middle">${esc(ROOMNAME[id])}</text>
+      <text class="st ${s==="lost"?"bad":"ok"}" x="${lx}" y="${ly+15}" text-anchor="middle">${s==="lost"?"ruined":"standing"}</text>
+      ${newByRoom[id]?`<circle class="newdot" cx="${lx+ (ROOMNAME[id].length*3.3)+8}" cy="${ly-4}" r="4"/>`:""}</g>`;
+  };
+  return `<svg viewBox="0 0 440 330" role="img" aria-label="Plan of the Bodleian buildings">
+    <defs><pattern id="hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="7" height="7" fill="#2a1d22"/><line x1="0" y1="0" x2="0" y2="7" stroke="#c8553d" stroke-width="2"/></pattern></defs>
+    <g class="streets"><path d="M10 22 H430"/><text x="14" y="16">Broad Street</text><path d="M418 30 V320"/><text x="0" y="0" transform="translate(432 200) rotate(90)">Catte Street</text></g>
+    ${room("clar",`<rect class="shape" x="250" y="34" width="150" height="54" rx="2"/>`,325,58)}
+    ${room("duke",`<rect class="shape" x="20" y="34" width="210" height="54" rx="2"/>`,125,58)}
+    ${room("div",`<rect class="shape" x="20" y="98" width="110" height="90" rx="2"/>`,75,140)}
+    ${room("tower",`<path class="shape" d="M140 98 H400 V188 H140 Z M190 116 V170 H350 V116 Z" fill-rule="evenodd"/>`,270,212)}
+    ${room("rad",`<circle class="shape" cx="270" cy="276" r="40"/>`,270,274)}
+  </svg>`;
+}
+
+function renderPresent(){
+  const sim=simulate(S);
+  if(sim.bathOpen && !S.bathKnown){S.bathKnown=true;}
+  const vis=visible(sim);
+  const prev=S.prevVisible?new Set(S.prevVisible):null;
+  const isNew=it=>prev&&!prev.has(it.id);
+  const newByRoom={}; vis.forEach(it=>{if(isNew(it)) newByRoom[it.where]=true;});
+  const standing=sim.engine?0:ROOMS.length-sim.lost.size;
+  const roomItems=vis.filter(it=>it.where===S.room);
+  const roomLost = S.room!=="archive" && (sim.engine||sim.lost.has(S.room));
+  const hints=hintsFor(sim);
+  const lastLog=S.log[S.log.length-1];
+
+  app.innerHTML=`
+  <div class="top"><div><span class="label">The present · timeline ${S.log.length+1}</span><h1>The Bodleian Library</h1>
+    <p class="sub">${sim.engine?"A field of ash between Broad Street and the High.":standing===ROOMS.length?"Every building stands.":"Partly standing. Partly not."}</p></div>
+    <div class="meter" title="${standing} of ${ROOMS.length} buildings standing" aria-label="${standing} of ${ROOMS.length} buildings standing">${ROOMS.map((r,i)=>`<i class="${i<standing?"ok":""}"></i>`).join("")}<span class="label" style="margin-left:6px">${standing}/${ROOMS.length} standing</span></div></div>
+  ${fragmentHTML(sim)}
+  <div class="grid">
+    <div class="panel map">
+      <div class="row" style="justify-content:space-between"><h2>Plan of the library</h2><span class="label">choose a building</span></div>
+      ${mapSVG(sim,newByRoom)}
+      <div class="roomchips">${ROOMS.map(r=>{const l=sim.engine||sim.lost.has(r.id);return `<button class="${l?"lost":""}${S.room===r.id?" sel":""}" data-room="${r.id}">${esc(r.name)}${l?" \u00b7 ruined":""}${newByRoom[r.id]?" \u2022 new":""}</button>`;}).join("")}</div>
+      <button class="book k-record" data-room="archive" style="justify-content:space-between;align-items:center"><span class="spine"></span><span style="flex:1"><span class="t">College Archive</span><br><span class="m">Diaries, letters and records kept in a college attic. These survive whatever happens to the library.</span></span>${newByRoom.archive?`<span class="new">new</span>`:""}</button>
+    </div>
+    <div class="panel">
+      <span class="label">${S.room==="archive"?"Private papers":"Shelves"}</span>
+      <h2>${S.room==="archive"?"College Archive":esc(ROOMNAME[S.room])}</h2>
+      <div class="shelf">
+        ${roomLost?`<p class="ashes">${sim.engine?"Nothing is left here but scorched stone.":"This building is in ruins. Whatever was shelved here is lost."}</p>`:
+          roomItems.length?roomItems.map(it=>`<button class="book k-${it.kind}${S.read[it.id]?" read":""}" data-item="${it.id}"><span class="spine"></span><span><span class="t">${esc(it.title)}</span>${isNew(it)?`<span class="new">new</span>`:""}<br><span class="m">${esc(it.by)}</span></span></button>`).join(""):
+          `<p class="empty">The shelves here hold nothing that bears on your problem.</p>`}
+      </div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="row" style="justify-content:space-between"><h2>Travel back</h2>${lastLog?`<span class="muted">Last trip: ${esc(lastLog.label)}</span>`:""}</div>
+    <div class="travel">
+      <button class="trip" id="toDinner"><span class="yr">1887</span><h3>The Founder's Dinner</h3><span class="role">You are kitchen staff. You lay the place cards.</span>
+        <span class="flag ${sim.dm.has("C-D")?"bad":"ok"}">${S.trips?(sim.dm.has("C-D")?"Mr A and Mr B still meet here":"Mr A and Mr B no longer meet here"):"Where it began"}</span></button>
+      <button class="trip" id="toBath" ${S.bathKnown?"":"disabled"}><span class="yr">1888</span><h3>British Association, Bath</h3><span class="role">${S.bathKnown?"You are the programme clerk. You set the timetable.":"You have no reason to go here yet."}</span>
+        ${S.bathKnown?`<span class="flag ${sim.engine==="bath"?"bad":(sim.bathOpen?"ok":"")}">${!sim.bathOpen?"Not reached in this timeline":sim.engine==="bath"?"Mr A and Mr B meet here":"Mr A and Mr B do not meet here"}</span>`:""}</button>
+    </div>
+  </div>
+  <div class="grid">
+    <div class="panel">
+      <h2>Casebook</h2>
+      <p class="muted">Every timeline you have made. Restoring one puts the past back the way it was on that trip.</p>
+      <div class="log">${S.log.length?S.log.map((l,i)=>`<div class="entry${i===S.log.length-1?" cur":""}"><span class="n">${i+1}</span><span class="what">${esc(l.label)} <span class="muted">· ${l.engine?"library destroyed":l.standing+"/"+ROOMS.length+" standing"}</span></span><button data-restore="${i}">Restore</button></div>`).join(""):`<p class="empty">No trips yet.</p>`}</div>
+      <label class="label" for="notes">Your notes</label>
+      <textarea id="notes" placeholder="Who is Mr A? Who is Mr B? Which pairs are dangerous?">${esc(S.notes)}</textarea>
+    </div>
+    <div class="panel">
+      <h2>Ask the librarian</h2>
+      ${hints.length?`${hints.slice(0,S.hint).map(h=>`<p class="hint">${esc(h)}</p>`).join("")}
+      ${S.hint<hints.length?`<button class="btn ghost" id="hint">${S.hint?"Another hint":"I'm stuck"}</button>`:`<p class="muted">That is everything the librarian knows.</p>`}`:`<p class="muted">Nothing to ask. The library is whole.</p>`}
+      <details><summary>How it works</summary><div class="shelf" style="margin-top:8px">
+        <p>Read what is on the shelves now. Then travel back and change one arrangement. When you return, books marked <b>new</b> show what changed.</p>
+        <p>Books in a ruined building are lost, but the College Archive always survives.</p>
+        <p>The same arrangement always gives the same result, so you can experiment freely and restore any earlier timeline.</p></div></details>
+    </div>
+  </div>`;
+
+  // wire up
+  app.querySelectorAll("[data-room]").forEach(el=>{
+    const go=()=>{S.room=el.dataset.room;render();};
+    el.addEventListener("click",go);
+    el.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();go();}});
+  });
+  app.querySelectorAll("[data-item]").forEach(el=>el.onclick=()=>openBook(el.dataset.item,sim));
+  app.querySelector("#toDinner").onclick=()=>{S.draft=S.seats.slice();S.sel=null;S.screen="dinner";render();window.scrollTo(0,0);};
+  const tb=app.querySelector("#toBath"); if(S.bathKnown) tb.onclick=()=>{S.draft=S.sched.slice();S.sel=null;S.screen="bath";render();window.scrollTo(0,0);};
+  app.querySelectorAll("[data-restore]").forEach(el=>el.onclick=()=>{
+    const l=S.log[+el.dataset.restore]; S.prevVisible=visible(simulate(S)).map(i=>i.id);
+    S.seats=l.seats.slice(); S.sched=l.sched.slice(); S.hint=0;
+    S.log.push(Object.assign({},l,{label:"Restored timeline "+(+el.dataset.restore+1)}));
+    render();
+  });
+  const n=app.querySelector("#notes"); n.oninput=()=>{S.notes=n.value;save();};
+  const h=app.querySelector("#hint"); if(h) h.onclick=()=>{S.hint++;render();};
+}
+
+function openBook(id,sim){
+  const it=ITEMS.find(i=>i.id===id); if(!it) return;
+  S.read[id]=true; save();
+  const c={dm:sim.dm,bm:sim.bm,bathOpen:sim.bathOpen};
+  const paras=it.dyn?it.dyn(c):it.text;
+  const sc=document.createElement("div"); sc.className="scrim";
+  sc.innerHTML=`<div class="page" role="dialog" aria-modal="true" aria-label="${esc(it.title)}"><h3>${esc(it.title)}</h3><span class="by">${esc(it.by)}</span>${paras.map(p=>`<p>${esc(p)}</p>`).join("")}<button class="close">Put it back</button></div>`;
+  const close=()=>{sc.remove();render();};
+  sc.onclick=e=>{if(e.target===sc) close();};
+  sc.querySelector(".close").onclick=close;
+  document.addEventListener("keydown",function k(e){if(e.key==="Escape"){document.removeEventListener("keydown",k);if(sc.isConnected)close();}});
+  document.body.appendChild(sc); sc.querySelector(".close").focus();
+}
+
+// ----- dinner planner -----
+function renderDinner(){
+  const d=S.draft, m=dinnerMeet(d);
+  app.innerHTML=`
+  <div class="top"><div><span class="label">12 November 1887 · the college kitchens</span><h1>The Founder's Dinner</h1>
+    <p class="sub">Cook has handed you the place cards for the Master's table.</p></div>
+    <button class="btn ghost" id="back">Return without changing anything</button></div>
+  <p class="briefing">Six places along one side of the Master's table. Tap a card, then tap another to swap them. Lay the table how you like, then send the soup up.</p>
+  <div class="rules">
+    <div class="rule"><b>The Master</b> takes the first place at the head. He will not move.</div>
+    <div class="rule"><b>Conversation</b> only happens between neighbours.</div>
+    <div class="rule"><b>Mrs Ellery</b> introduces whoever sits on her left to whoever sits on her right.</div>
+  </div>
+  <div class="table" role="list">${d.map((p,i)=>`<button class="seat${i===0?" fixed":""}${S.sel===i?" sel":""}" data-seat="${i}" role="listitem" ${i===0?'aria-disabled="true"':""}><span class="no">Place ${i+1}</span><span class="nm">${esc(P[p].name)}</span><span class="ds">${esc(P[p].desc)}</span></button>`).join("")}</div>
+  <div class="panel"><span class="label">Who will talk to whom tonight</span>
+    <div class="talks">${[...m.entries()].map(([k,how])=>{const [a,b]=k.split("-");return `<span class="chip${how.startsWith("intro")?" intro":""}">${esc(P[a].name)} & ${esc(P[b].name)}${how.startsWith("intro")?" (introduced)":""}</span>`;}).join("")}</div></div>
+  <div class="row"><button class="btn" id="serve">Serve dinner</button><button class="btn ghost" id="hist">Reset to the original seating</button></div>`;
+  app.querySelectorAll("[data-seat]").forEach(el=>el.onclick=()=>{
+    const i=+el.dataset.seat; if(i===0) return;
+    if(S.sel===null||S.sel===undefined){S.sel=i;}
+    else if(S.sel===i){S.sel=null;}
+    else{const t=d[i];d[i]=d[S.sel];d[S.sel]=t;S.sel=null;}
+    render();
+  });
+  app.querySelector("#back").onclick=()=>{S.screen="present";S.sel=null;render();};
+  app.querySelector("#hist").onclick=()=>{S.draft=HIST_SEATS.slice();S.sel=null;render();};
+  app.querySelector("#serve").onclick=()=>{
+    const evs=[...m.entries()].map(([k,how])=>{const [a,b]=k.split("-");
+      return {t: how.startsWith("intro") ? `Mrs Ellery leans across: “${P[a].name}, you simply must know ${P[b].name}.” They talk until the port.` : `${P[a].name} and ${P[b].name} talk across the turbot.`, bad:false};});
+    commitTrip("Dinner: "+d.map(p=>P[p].name.split(" ").pop()).join(", "), ()=>{S.seats=d.slice();},
+      "The soup goes up. You watch from the servery door.", evs);
+  };
+}
+
+// ----- Bath planner -----
+function bathProblems(c){
+  const out=[];
+  if(c.indexOf("Q")>1) out.push("Miss Quill must speak in the morning. She has a noon train to catch for her dig.");
+  if(c.indexOf("D")%2!==0) out.push("Mr Dunmore's engine only fits in the Ball Room.");
+  return out;
+}
+function renderBath(){
+  const c=S.draft, probs=bathProblems(c), r=bathMeet(c);
+  const cell=i=>`<button class="cell${S.sel===i?" sel":""}" data-cell="${i}"><span class="nm">${esc(P[c[i]].name)}</span><span class="tk">${esc(P[c[i]].talk)}</span></button>`;
+  app.innerHTML=`
+  <div class="top"><div><span class="label">September 1888 · the Assembly Rooms, Bath</span><h1>British Association: the programme</h1>
+    <p class="sub">You are the clerk. The printer wants the timetable by tonight.</p></div>
+    <button class="btn ghost" id="back">Return without changing anything</button></div>
+  <p class="briefing">Six talks, three sessions, two rooms. Tap a talk, then tap another to swap them.</p>
+  <div class="rules">
+    <div class="rule"><b>Speakers</b> cannot attend another talk in their own session.</div>
+    <div class="rule"><b>When free</b>, each speaker goes to a talk they are keen on. If keen on both, they choose the bigger <b>Ball Room</b>.</div>
+    <div class="rule"><b>If keen on neither</b>, they take the waters at the <b>Pump Room</b>, and everyone there meets.</div>
+  </div>
+  <div class="panel" style="overflow-x:auto"><div class="prog">
+    <span></span><span class="h">Ball Room</span><span class="h">Octagon</span>
+    ${SESS.map((s,i)=>`<span class="sess">${s}</span>${cell(2*i)}${cell(2*i+1)}`).join("")}
+  </div>
+  ${probs.map(p=>`<p class="warn">${esc(p)}</p>`).join("")}</div>
+  <div class="panel"><span class="label">Speakers' letters to the clerk</span>
+    <div class="letters">${Object.keys(KEEN).map(x=>`<div class="letter"><span class="who">${esc(P[x].name)}, ${esc(P[x].desc)}</span><br>I very much hope to hear ${KEEN[x].map(y=>esc(P[y].name)).join(" and ")}.</div>`).join("")}</div></div>
+  <div class="panel"><span class="label">Who will meet whom</span>
+    <div class="talks">${[...r.m.entries()].map(([k,how])=>{const [a,b]=k.split("-");return `<span class="chip${how.startsWith("Pump")?" intro":""}">${esc(P[a].name)} & ${esc(P[b].name)} (${esc(how)})</span>`;}).join("")}</div></div>
+  <div class="row"><button class="btn" id="print" ${probs.length?"disabled":""}>Send the programme to the printer</button><button class="btn ghost" id="hist">Reset to the original programme</button></div>`;
+  app.querySelectorAll("[data-cell]").forEach(el=>el.onclick=()=>{
+    const i=+el.dataset.cell;
+    if(S.sel===null||S.sel===undefined) S.sel=i;
+    else if(S.sel===i) S.sel=null;
+    else{const t=c[i];c[i]=c[S.sel];c[S.sel]=t;S.sel=null;}
+    render();
+  });
+  app.querySelector("#back").onclick=()=>{S.screen="present";S.sel=null;render();};
+  app.querySelector("#hist").onclick=()=>{S.draft=HIST_SCHED.slice();S.sel=null;render();};
+  const pr=app.querySelector("#print"); if(!probs.length) pr.onclick=()=>{
+    const evs=r.where.map((w,i)=>{
+      const parts=[`${SESS[i]}: ${P[w.ball].name} in the Ball Room, ${P[w.oct].name} in the Octagon.`];
+      if(w.toBall.length) parts.push(`${w.toBall.map(x=>P[x].name).join(", ")} ${w.toBall.length>1?"crowd":"crowds"} into the Ball Room.`);
+      if(w.toOct.length) parts.push(`${w.toOct.map(x=>P[x].name).join(", ")} ${w.toOct.length>1?"slip":"slips"} into the Octagon.`);
+      if(w.pump.length) parts.push(`${w.pump.map(x=>P[x].name).join(", ")} ${w.pump.length>1?"take":"takes"} the waters at the Pump Room.`);
+      return {t:parts.join(" "),bad:false};});
+    commitTrip("Bath: "+SESS.map((s,i)=>s[0]+" "+P[c[2*i]].name.split(" ").pop()+"/"+P[c[2*i+1]].name.split(" ").pop()).join(", "), ()=>{S.sched=c.slice();},
+      "The programme is printed. You spend the meeting at the clerk's desk, watching.", evs);
+  };
+}
+
+function commitTrip(label,apply,opening,evs){
+  S.prevVisible=visible(simulate(S)).map(i=>i.id);
+  apply(); S.trips++; S.hint=0;
+  const sim=simulate(S);
+  S.log.push({label,seats:S.seats.slice(),sched:S.sched.slice(),engine:sim.engine,standing:sim.engine?0:ROOMS.length-sim.lost.size});
+  S.interlude={opening,evs};
+  S.screen="interlude"; S.sel=null; render(); window.scrollTo(0,0);
+}
+function renderInterlude(){
+  const it=S.interlude||{opening:"",evs:[]};
+  app.innerHTML=`<div class="interlude fade"><span class="label">The past</span><p>${esc(it.opening)}</p>
+    ${it.evs.map(e=>`<p class="ev">${esc(e.t)}</p>`).join("")}
+    <p class="muted">Then the lamps gutter, the room tilts, and you are standing on Broad Street again.</p>
+    <div class="row"><button class="btn" id="ret">See what the present has become</button></div></div>`;
+  app.querySelector("#ret").onclick=()=>{
+    const sim=simulate(S);
+    S.room = (sim.engine||!S.prevVisible) ? "archive" : S.room;
+    S.screen = (!sim.engine&&sim.lost.size===0) ? "won" : "present";
+    render(); window.scrollTo(0,0);
+  };
+}
+function renderWon(){
+  const sim=simulate(S);
+  app.innerHTML=`<div class="title-screen fade"><span class="label">The present · after ${S.trips} trips</span>
+    <h1>The library stands</h1>${fragmentHTML(sim)}
+    <p class="lede">Rev. Carrow and Mr Dunmore never met. The Radcliffe Camera, Duke Humfrey's Library, the Divinity School, the Old Schools Quadrangle and the Clarendon Building are all where they should be, and full of books that some of them would never have been written without you.</p>
+    <p class="muted">This is the end of chapter one. The story of Mr A and Mr B is a placeholder for now.</p>
+    <div class="row"><button class="btn" id="walk">Walk the shelves</button><button class="btn ghost" id="again">Play again from the ruins</button></div></div>`;
+  app.querySelector("#walk").onclick=()=>{S.screen="present";render();};
+  app.querySelector("#again").onclick=()=>{S=fresh();S.screen="present";render();};
+}
+
+window.__game={simulate,dinnerMeet,bathMeet,HAZ,ITEMS,get S(){return S;}};
+render();
+})();
+</script>
