@@ -16,7 +16,13 @@ You walk around three places: the ruined (or rebuilt) Bodleian in the present, a
 
 Progress is saved in your browser, and the casebook lets you restore any earlier timeline.
 
-Sound is generated in the browser (no audio files): footsteps, a whoosh when you travel, a chime when the present gets better or worse, and bells when you save the library. Use the Sound button to turn it off.
+Sound is generated in the browser, with no audio files:
+
+- **Music:** each place has its own generative theme. The ruins get a slow piano in D minor, the restored library a music box, the 1887 dinner a harpsichord minuet, and Bath a string waltz.
+- **Background:** wind, crackling embers and crows in the ruins; owls and distant Great Tom in the restored library; murmuring guests, clinking glasses and a crackling fire in 1887; and chatter, teacups, applause and the bubbling spring in Bath. Fires and the spring get louder as you walk towards them.
+- **Effects:** footsteps, a whoosh when you travel, a chime when the present gets better or worse, and bells when you save the library.
+
+The Music and Sound buttons turn them off.
 
 ## Chapter one
 
