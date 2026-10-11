@@ -8,6 +8,12 @@ The library lies in ruins. A scrap of a page blames two men, Mr A and Mr B, for 
 
 Open `index.html` in a browser. It is one self-contained file, with no build step and no dependencies.
 
+You walk around three places: the ruined (or rebuilt) Bodleian in the present, a college in 1887, and the Assembly Rooms in Bath in 1888. Use the arrow keys or WASD to walk and E or Space to talk, read or use things. On a phone, tap where you want to go, or tap a person or object.
+
+- **Present:** read the shelves in each building and the boxes in the College Archive. Ask Miss Harker, the archivist, for hints. The lectern in the Old Schools Quadrangle holds the fragment, and that is where you travel from.
+- **1887:** talk to the guests in the Senior Common Room, then lay the place cards on the Master's table in the Hall. Wind the kitchen clock to go home without changing anything.
+- **1888:** talk to the speakers around the Assembly Rooms, then write the programme at the clerk's desk.
+
 Progress is saved in your browser, and the casebook lets you restore any earlier timeline.
 
 ## Chapter one
@@ -29,7 +35,7 @@ It tries every possible seating and timetable and lists the ones that save the l
 
 ## Layout
 
-- `index.html` contains the whole game: data (characters, dangerous pairs, books) at the top of the script, then the simulation, then the screens.
+- `index.html` contains the whole game. The first script (`id="logic"`) holds the rules and data: characters, dangerous pairs, books and hints. The second holds the maps (ASCII tile grids with a legend), the people you can talk to, the walking engine and the screens.
 - `tools/check-puzzles.js` is the solvability checker.
 - `PUZZLES.md` holds the design notes and answers.
 

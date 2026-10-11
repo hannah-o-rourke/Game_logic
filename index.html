@@ -2,79 +2,67 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=Alegreya+Sans:wght@400;500;700&display=swap">
 <style>
-/* Layout: a night-time library. Fragment across the top, plan of the Bodleian on the left,
-   shelves and casebook on the right. One deliberate dark look in both host themes. */
+/* Layout: one walkable scene (canvas) with a slim HUD above and an action bar below.
+   Reading, planning and the casebook open as sheets over the scene. Single deliberate dark look. */
 :root{
   color-scheme: dark;
-  --ink:#121826;        /* night sky over Broad Street */
-  --ink-2:#1b2335;      /* panel */
-  --ink-3:#26304a;      /* raised */
-  --line:#34405e;
-  --gilt:#d4a94e;       /* gold leaf from Duke Humfrey's ceiling */
-  --gilt-soft:#8f7642;
-  --rubric:#c8553d;     /* manuscript red: damage */
-  --verdure:#7fae8a;    /* standing */
-  --vellum:#efe4cc;     /* book pages */
-  --vellum-ink:#2b2418;
-  --text:#e3e6ee;
-  --muted:#9aa3b8;
+  --ink:#121826; --ink-2:#1b2335; --ink-3:#26304a; --line:#34405e;
+  --gilt:#d4a94e; --gilt-soft:#8f7642; --rubric:#c8553d; --verdure:#7fae8a;
+  --vellum:#efe4cc; --vellum-ink:#2b2418; --text:#e3e6ee; --muted:#9aa3b8;
   --f-display:"IM Fell English SC","IM Fell English",Georgia,serif;
   --f-book:"IM Fell English",Georgia,"Times New Roman",serif;
   --f-ui:"Alegreya Sans","Gill Sans","Segoe UI",system-ui,sans-serif;
 }
 *{box-sizing:border-box}
 html,body{background:var(--ink);color:var(--text)}
-body{font-family:var(--f-ui);font-size:16px;line-height:1.5;padding-inline:16px;padding-block:20px 48px}
-.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
-h1,h2,h3{font-family:var(--f-display);font-weight:400;text-wrap:balance;margin:0;letter-spacing:.01em}
-h1{font-size:clamp(1.8rem,4vw,2.6rem);color:var(--gilt)}
-h2{font-size:1.45rem;color:var(--gilt)}
+body{font-family:var(--f-ui);font-size:16px;line-height:1.5;padding-inline:16px;padding-block:16px 40px}
+.wrap{max-width:1100px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+h1,h2,h3{font-family:var(--f-display);font-weight:400;text-wrap:balance;margin:0}
+h1{font-size:clamp(1.5rem,3.4vw,2.2rem);color:var(--gilt);line-height:1.1}
+h2{font-size:1.4rem;color:var(--gilt)}
 h3{font-size:1.15rem}
 p{margin:0}
 button{font:inherit;cursor:pointer}
-button:focus-visible,.seat:focus-visible,.cell:focus-visible,.room:focus-visible{outline:2px solid var(--gilt);outline-offset:2px}
+button:focus-visible,canvas:focus-visible{outline:2px solid var(--gilt);outline-offset:2px}
 .label{font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
-.btn{background:var(--gilt);color:var(--ink);border:0;border-radius:3px;padding:10px 18px;font-weight:700;letter-spacing:.02em}
+.btn{background:var(--gilt);color:var(--ink);border:0;border-radius:3px;padding:10px 18px;font-weight:700}
 .btn:hover{filter:brightness(1.08)}
 .btn[disabled]{background:var(--ink-3);color:var(--muted);cursor:not-allowed}
 .btn.ghost{background:transparent;color:var(--gilt);border:1px solid var(--gilt-soft)}
-.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.btn.small{padding:6px 12px;font-size:.9rem}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .muted{color:var(--muted)}
-.panel{background:var(--ink-2);border:1px solid var(--line);border-radius:4px;padding:18px;display:flex;flex-direction:column;gap:12px;min-width:0}
 
-/* header */
-.top{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:14px}
-.top .sub{font-family:var(--f-book);font-style:italic;color:var(--muted)}
-.meter{display:flex;gap:6px;align-items:center}
-.meter i{width:22px;height:8px;border-radius:1px;background:var(--rubric);display:block}
+.hud{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.hud .where{font-family:var(--f-book);font-style:italic;color:var(--muted)}
+.meter{display:flex;gap:5px;align-items:center}
+.meter i{width:18px;height:7px;border-radius:1px;background:var(--rubric);display:block}
 .meter i.ok{background:var(--verdure)}
+.strip{background:var(--vellum);color:var(--vellum-ink);font-family:var(--f-book);font-size:1.02rem;line-height:1.45;padding:10px 16px;border-radius:2px;
+  clip-path:polygon(0 8%,4% 0,30% 4%,52% 0,78% 5%,100% 0,99% 50%,100% 100%,70% 95%,44% 100%,18% 94%,0 100%,1% 50%)}
+.strip b{font-weight:400;background:rgba(200,85,61,.2)}
+.strip.saved{background:#dfe8d6}
 
-/* fragment */
-.fragment{background:var(--vellum);color:var(--vellum-ink);font-family:var(--f-book);font-size:1.2rem;line-height:1.55;padding:18px 22px;border-radius:2px;position:relative;
-  clip-path:polygon(0 6%,4% 0,30% 3%,52% 0,78% 4%,100% 0,98% 40%,100% 100%,70% 96%,44% 100%,18% 95%,0 100%,2% 50%)}
-.fragment .tag{font-family:var(--f-ui);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:#7b6a4c;display:block;margin-bottom:4px}
-.fragment b{font-weight:400;background:rgba(200,85,61,.18)}
-.fragment.saved{background:#dfe8d6}
+.stage{position:relative;border:1px solid var(--line);border-radius:4px;overflow:hidden;background:#000}
+canvas{display:block;width:100%;touch-action:none}
+.dialog{position:absolute;left:12px;right:12px;bottom:12px;background:rgba(18,24,38,.94);border:1px solid var(--gilt-soft);border-radius:4px;padding:12px 16px;display:flex;flex-direction:column;gap:6px;cursor:pointer}
+.dialog .who{font-family:var(--f-display);color:var(--gilt);font-size:1.05rem}
+.dialog .say{font-family:var(--f-book);font-size:1.1rem;line-height:1.45}
+.dialog .more{font-size:.78rem;color:var(--muted);align-self:flex-end}
+.actionbar{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center}
+.act{min-height:44px}
+.help{font-size:.85rem;color:var(--muted)}
 
-/* present layout */
-.grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:20px}
-@media (max-width:860px){.grid{grid-template-columns:minmax(0,1fr)}}
-.map svg{width:100%;height:auto;display:block}
-.room{cursor:pointer}
-.room .shape{fill:var(--ink-3);stroke:var(--gilt-soft);stroke-width:1.5;transition:fill .2s}
-.room:hover .shape,.room.sel .shape{fill:#33405f;stroke:var(--gilt)}
-.room.lost .shape{fill:url(#hatch);stroke:var(--rubric)}
-.room text{fill:var(--text);font-family:var(--f-ui);font-size:13px;pointer-events:none;paint-order:stroke;stroke:var(--ink);stroke-width:4px;stroke-linejoin:round}
-.room text.st{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
-.roomchips{display:flex;flex-wrap:wrap;gap:6px}
-.roomchips button{background:var(--ink-3);color:var(--text);border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:.85rem}
-.roomchips button.lost{border-color:var(--rubric);color:#f0b3a5}
-.roomchips button.sel{border-color:var(--gilt);color:var(--gilt)}
-.room text.st.ok{fill:var(--verdure)} .room text.st.bad{fill:var(--rubric)}
-.room .newdot{fill:var(--gilt)}
-.streets text{fill:var(--muted);font-family:var(--f-book);font-style:italic;font-size:11px}
-.streets path{stroke:var(--line);stroke-width:1;fill:none;stroke-dasharray:3 4}
-
+/* sheets */
+.scrim{position:fixed;inset:0;background:rgba(8,10,18,.72);display:flex;align-items:center;justify-content:center;padding:16px;z-index:10}
+.sheet{background:var(--ink-2);border:1px solid var(--line);border-radius:4px;max-width:860px;width:100%;max-height:88vh;overflow:auto;padding:20px;display:flex;flex-direction:column;gap:14px}
+.sheet .head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.x{background:none;border:1px solid var(--line);color:var(--muted);border-radius:3px;padding:4px 10px;flex:none}
+.page{background:var(--vellum);color:var(--vellum-ink);max-width:620px;width:100%;max-height:86vh;overflow:auto;border-radius:2px;padding:28px 30px;font-family:var(--f-book);font-size:1.12rem;line-height:1.6;display:flex;flex-direction:column;gap:12px}
+.page h3{font-family:var(--f-display);font-size:1.35rem}
+.page .by{font-style:italic;color:#6a5c45}
+.page .close{align-self:flex-end;font-family:var(--f-ui);background:var(--vellum-ink);color:var(--vellum);border:0;border-radius:3px;padding:6px 14px}
+.page p+p{text-indent:1.2em}
 .shelf{display:flex;flex-direction:column;gap:8px}
 .book{display:flex;gap:12px;align-items:flex-start;text-align:left;background:var(--ink-3);border:1px solid var(--line);border-radius:3px;padding:10px 12px;color:var(--text);width:100%}
 .book:hover{border-color:var(--gilt-soft)}
@@ -84,80 +72,63 @@ button:focus-visible,.seat:focus-visible,.cell:focus-visible,.room:focus-visible
 .book .m{font-size:.8rem;color:var(--muted)}
 .book .new{font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink);background:var(--gilt);border-radius:2px;padding:1px 6px;margin-left:6px;vertical-align:2px}
 .book.read .t{color:#c9cdd8}
-.empty{font-family:var(--f-book);font-style:italic;color:var(--muted);padding:6px 0}
+.empty{font-family:var(--f-book);font-style:italic;color:var(--muted)}
 .ashes{color:var(--rubric);font-family:var(--f-book);font-style:italic}
-
+.fragment{background:var(--vellum);color:var(--vellum-ink);font-family:var(--f-book);font-size:1.2rem;line-height:1.55;padding:18px 22px;border-radius:2px}
+.fragment b{font-weight:400;background:rgba(200,85,61,.2)}
 .travel{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
-.trip{background:var(--ink-3);border:1px solid var(--line);border-radius:4px;padding:14px;display:flex;flex-direction:column;gap:8px;text-align:left;color:var(--text)}
+.trip{background:var(--ink-3);border:1px solid var(--line);border-radius:4px;padding:14px;display:flex;flex-direction:column;gap:6px;text-align:left;color:var(--text)}
 .trip:hover:not([disabled]){border-color:var(--gilt)}
 .trip[disabled]{opacity:.5;cursor:not-allowed}
-.trip .yr{font-family:var(--f-display);color:var(--gilt);font-size:1.6rem;line-height:1;font-variant-numeric:oldstyle-nums}
+.trip .yr{font-family:var(--f-display);color:var(--gilt);font-size:1.6rem;line-height:1}
 .trip .role{font-size:.85rem;color:var(--muted)}
-.trip .flag{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase}
+.flag{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase}
 .flag.bad{color:var(--rubric)} .flag.ok{color:var(--verdure)}
-
-.log{display:flex;flex-direction:column;gap:6px;max-height:260px;overflow:auto}
+.log{display:flex;flex-direction:column;gap:6px;max-height:240px;overflow:auto}
 .log .entry{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;font-size:.88rem;padding:6px 8px;border-radius:3px;background:var(--ink-3)}
-.log .entry.cur{outline:1px solid var(--gilt-soft)}
 .log .n{font-variant-numeric:tabular-nums;color:var(--muted)}
 .log .what{min-width:0;overflow-wrap:anywhere}
 .log button{background:none;border:1px solid var(--line);color:var(--gilt);border-radius:3px;padding:2px 8px;font-size:.8rem}
 textarea{width:100%;min-height:110px;background:var(--ink);color:var(--text);border:1px solid var(--line);border-radius:3px;padding:10px;font:inherit;font-size:.92rem;resize:vertical}
-details summary{cursor:pointer;color:var(--gilt)}
 .hint{font-family:var(--f-book);font-size:1.02rem;border-left:2px solid var(--gilt-soft);padding-left:10px}
 
-/* planners */
-.briefing{font-family:var(--f-book);font-size:1.08rem;max-width:68ch}
-.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px}
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
 .rule{background:var(--ink-3);border-radius:3px;padding:10px 12px;font-size:.92rem}
 .rule b{color:var(--gilt);font-weight:500}
-.table{position:relative;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;padding:26px 16px;background:linear-gradient(#3a2a1c,#2e2116);border-radius:6px;border:1px solid #5a4330}
-.table::before{content:"head of table";position:absolute;left:16px;top:6px;font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:#b49a78}
+.table{position:relative;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;padding:26px 12px 14px;background:linear-gradient(#3a2a1c,#2e2116);border-radius:6px;border:1px solid #5a4330}
+.table::before{content:"head of table";position:absolute;left:12px;top:6px;font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:#b49a78}
 @media (max-width:700px){.table{grid-template-columns:minmax(0,1fr)}}
-.seat{background:var(--vellum);color:var(--vellum-ink);border:2px solid transparent;border-radius:3px;padding:10px 8px;min-height:92px;display:flex;flex-direction:column;gap:2px;text-align:center;justify-content:center;font-family:var(--f-book);cursor:pointer;width:100%}
+.seat{background:var(--vellum);color:var(--vellum-ink);border:2px solid transparent;border-radius:3px;padding:8px 6px;min-height:84px;display:flex;flex-direction:column;gap:2px;text-align:center;justify-content:center;font-family:var(--f-book);width:100%}
 .seat .no{font-family:var(--f-ui);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:#7b6a4c}
-.seat .nm{font-size:1.08rem;line-height:1.2}
-.seat .ds{font-family:var(--f-ui);font-size:.75rem;color:#6a5c45}
-.seat.sel{border-color:var(--gilt);box-shadow:0 0 0 3px rgba(212,169,78,.35)}
+.seat .nm{font-size:1.04rem;line-height:1.2}
+.seat .ds{font-family:var(--f-ui);font-size:.74rem;color:#6a5c45}
+.seat.sel,.cell.sel{border-color:var(--gilt);box-shadow:0 0 0 3px rgba(212,169,78,.35)}
 .seat.fixed{cursor:not-allowed;background:#e2d6b9}
 .talks{display:flex;flex-wrap:wrap;gap:6px}
 .chip{font-size:.85rem;background:var(--ink-3);border:1px solid var(--line);border-radius:999px;padding:3px 10px}
 .chip.intro{border-style:dashed;border-color:var(--gilt-soft)}
-.prog{display:grid;grid-template-columns:auto minmax(0,1fr) minmax(0,1fr);gap:8px;align-items:stretch}
-.prog .h{font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);align-self:end;padding:0 4px}
-.prog .sess{font-family:var(--f-display);color:var(--gilt);font-size:1.05rem;align-self:center;padding-right:6px}
-.cell{background:var(--vellum);color:var(--vellum-ink);border:2px solid transparent;border-radius:3px;padding:10px;text-align:left;font-family:var(--f-book);cursor:pointer;width:100%;display:flex;flex-direction:column;gap:2px}
-.cell .nm{font-size:1.05rem}
+.prog{display:grid;grid-template-columns:auto minmax(0,1fr) minmax(0,1fr);gap:8px}
+.prog .h{font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);align-self:end}
+.prog .sess{font-family:var(--f-display);color:var(--gilt);align-self:center;padding-right:6px}
+.cell{background:var(--vellum);color:var(--vellum-ink);border:2px solid transparent;border-radius:3px;padding:10px;text-align:left;font-family:var(--f-book);width:100%;display:flex;flex-direction:column;gap:2px}
 .cell .tk{font-style:italic;font-size:.9rem;color:#5c4f3a}
-.cell.sel{border-color:var(--gilt);box-shadow:0 0 0 3px rgba(212,169,78,.35)}
 .warn{color:var(--rubric);font-size:.92rem}
-.letters{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px}
-.letter{background:var(--ink-3);border-radius:3px;padding:10px 12px;font-family:var(--f-book);font-size:1rem}
+.letters{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px}
+.letter{background:var(--ink-3);border-radius:3px;padding:10px 12px;font-family:var(--f-book)}
 .letter .who{font-family:var(--f-ui);font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--gilt)}
-
-/* modal */
-.scrim{position:fixed;inset:0;background:rgba(8,10,18,.72);display:flex;align-items:center;justify-content:center;padding:16px;z-index:10}
-.page{background:var(--vellum);color:var(--vellum-ink);max-width:620px;width:100%;max-height:86vh;overflow:auto;border-radius:2px;padding:28px 30px;font-family:var(--f-book);font-size:1.12rem;line-height:1.6;box-shadow:0 20px 60px rgba(0,0,0,.5);display:flex;flex-direction:column;gap:12px}
-.page h3{font-family:var(--f-display);font-size:1.35rem;color:var(--vellum-ink)}
-.page .by{font-style:italic;color:#6a5c45}
-.page .close{align-self:flex-end;font-family:var(--f-ui);background:var(--vellum-ink);color:var(--vellum);border:0;border-radius:3px;padding:6px 14px}
-.page p+p{text-indent:1.2em}
-
-/* interlude */
-.interlude{max-width:70ch;margin:0 auto;display:flex;flex-direction:column;gap:14px;font-family:var(--f-book);font-size:1.15rem}
+.interlude{display:flex;flex-direction:column;gap:12px;font-family:var(--f-book);font-size:1.12rem}
 .interlude .ev{border-left:2px solid var(--line);padding-left:12px}
-.interlude .ev.bad{border-color:var(--rubric)}
 .title-screen{min-height:70vh;display:flex;flex-direction:column;gap:18px;justify-content:center;max-width:70ch;margin:0 auto}
-.title-screen h1{font-size:clamp(2.4rem,7vw,4rem);line-height:1.05}
+.title-screen h1{font-size:clamp(2.4rem,7vw,4rem)}
 .title-screen .lede{font-family:var(--f-book);font-size:1.25rem}
-@media (prefers-reduced-motion:no-preference){.fade{animation:fade .5s ease both}@keyframes fade{from{opacity:.4;transform:translateY(4px)}to{opacity:1;transform:none}}}
 </style>
 
 <div class="wrap" id="app"></div>
 
-<script>
+<script id="logic">
+// ===== Game logic: data, rules and simulation. No drawing here. =====
+// tools/check-puzzles.js runs this script on its own to prove the puzzles can be solved.
 (function(){
-// ---------- data ----------
 const P = {
   A:{name:"Prof. Ashworth", full:"Professor Hugh Ashworth", desc:"Master of the college"},
   B:{name:"Dr Bell", full:"Dr Lionel Bell", desc:"natural philosopher"},
@@ -344,288 +315,707 @@ function hintsFor(sim){
     "Put Dr Hale in the Ball Room in Miss Quill's session, and Mr Rao in the Ball Room in Lady Pell's session."];
   return [];
 }
+window.GameLogic={P,ROOMS,ROOMNAME,HAZ,KEEN,HIST_SEATS,HIST_SCHED,SESS,key,dinnerMeet,bathMeet,simulate,ITEMS,hintsFor};
+})();
+</script>
 
-// ---------- state ----------
-const SAVE="bodleian-founders-dinner-v1";
-const fresh=()=>({screen:"title",seats:HIST_SEATS.slice(),sched:HIST_SCHED.slice(),trips:0,bathKnown:false,log:[],seen:{},read:{},prevVisible:null,room:"archive",notes:"",hint:0,sel:null,draft:null,interlude:null});
+<script>
+(function(){
+const {P,ROOMS,ROOMNAME,KEEN,HIST_SEATS,HIST_SCHED,SESS,dinnerMeet,bathMeet,simulate,ITEMS,hintsFor}=window.GameLogic;
+
+// ===== Maps =====
+// ,  paving   .  floor   D  doorway   #  wall   S  bookshelf   B  archive boxes   L  lectern
+// T  table    c  chair   C  clock (way home)   K  stove/fireplace   P  portrait   ~  water
+const MAPS={
+  present:[
+    ",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,",
+    ",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,",
+    ",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,",
+    ",##################,,##################,",
+    ",#SS.SS.SS.SS.SS.S#,,#SS.SSS.SSS.SSS.S#,",
+    ",#................#,,#................#,",
+    ",#................#,,#................#,",
+    ",#................#,,#..T...T...T..T..#,",
+    ",#SS.SS.SS.SS.SS.S#,,#................#,",
+    ",########D#########,,########D#########,",
+    ",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,",
+    ",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,",
+    ",############,############D############,",
+    ",#..........#,#SS.SS.SS.SS.SS.SS.SS.SS#,",
+    ",#S........S#,#,,,,,,,,,,,,,,,,,,,,,,,#,",
+    ",#S........S#,#,,,,,,,,,,,,,,,,,,,,,,S#,",
+    ",#..........#,#,,,,,,,,,,,,,,,,,,,,,,,#,",
+    ",#S........SD,D,,,,,,,,,,,,,,,,,,,,,,,#,",
+    ",#S........S#,#,,,,,,,,,,,,,,,,,,,,,,SD,",
+    ",#..........#,#,,,,,,,,,,,L,,,,,,,,,,,#,",
+    ",#S........S#,#,,,,,,,,,,,,,,,,,,,,,,,#,",
+    ",#S........S#,#,,,,,,,,,,,,,,,,,,,,,,S#,",
+    ",############,#,,,,,,,,,,,,,,,,,,,,,,,#,",
+    ",,,,,,,,,,,,,,#,,,,,,,,,,,,,,,,,,,,,,,#,",
+    ",,,,,,,,,,,,,,############D############,",
+    ",##########,,,,,,,,,,,,,,,,,,,,,,,,,,,,,",
+    ",#........#,,,,,,,,,,,,,,,,,,,,,,,,,,,,,",
+    ",#.B.B.B..#,,,,,,,,,,,,,##D##,,,,,,,,,,,",
+    ",#........#,,,,,,,,,,,,#.....#,,,,,,,,,,",
+    ",#........D,,,,,,,,,,,#S.....S#,,,,,,,,,",
+    ",#........#,,,,,,,,,,,#...S...#,,,,,,,,,",
+    ",#.B.B.B..#,,,,,,,,,,,#.......#,,,,,,,,,",
+    ",#........#,,,,,,,,,,,#S..S..S#,,,,,,,,,",
+    ",##########,,,,,,,,,,,#.......#,,,,,,,,,",
+    ",,,,,,,,,,,,,,,,,,,,,,,#.SSS.#,,,,,,,,,,",
+    ",,,,,,,,,,,,,,,,,,,,,,,,#####,,,,,,,,,,,"
+  ],
+  college:[
+    "                              ",
+    " ############################ ",
+    " #KKK.....##.P...P...P...P..# ",
+    " #........##................# ",
+    " #........##................# ",
+    " #....TT..D.................# ",
+    " #........##...c.c.c.c.c.c..# ",
+    " #........##...TTTTTTTTTTTT.# ",
+    " #C.......##................# ",
+    " ###########................# ",
+    "           #................# ",
+    "           #................# ",
+    "           #................# ",
+    "           #########D######## ",
+    "           #................# ",
+    "           #.K............T.# ",
+    "           #..............T.# ",
+    "           #................# ",
+    "           #................# ",
+    "           #................# ",
+    "           ################## ",
+    "                              "
+  ],
+  bath:[
+    "                                  ",
+    " ################################ ",
+    " #.......#...........L..........# ",
+    " #..TT...#......................# ",
+    " #.......#......................# ",
+    " #.......D...c.c.c.c...c.c.c.c..# ",
+    " #.......#......................# ",
+    " #C......#...c.c.c.c...c.c.c.c..# ",
+    " ####D####......................# ",
+    " #,,,,,,,#...c.c.c.c...c.c.c.c..# ",
+    " #,,,,,,,,......................# ",
+    " #,,,,,,,#####D##########D####### ",
+    " #,,,,,,,D.........#............# ",
+    " #########....L....#.T..........# ",
+    "         #.........#............# ",
+    "         #.c.c.c.c.#.....~~~....# ",
+    "         #.........D.....~~~....# ",
+    "         #.c.c.c.c.#.....~~~....# ",
+    "         #.........#............# ",
+    "         #.........#..........T.# ",
+    "         #.........#............# ",
+    "         ######################## ",
+    "                                  ",
+    "                                  "
+  ]
+};
+const WALK=new Set([",",".","D"]);
+const REGIONS={
+  present:[
+    {id:"duke",x0:1,y0:3,x1:18,y1:9,label:"Duke Humfrey's Library"},
+    {id:"clar",x0:21,y0:3,x1:38,y1:9,label:"Clarendon Building"},
+    {id:"div",x0:1,y0:12,x1:12,y1:22,label:"Divinity School"},
+    {id:"tower",x0:14,y0:12,x1:38,y1:24,label:"Old Schools Quadrangle"},
+    {id:"rad",x0:21,y0:26,x1:31,y1:35,label:"Radcliffe Camera"},
+    {id:"archive",x0:1,y0:25,x1:10,y1:33,label:"College Archive"}],
+  college:[
+    {id:"kitchen",x0:1,y0:1,x1:10,y1:9,label:"Kitchens"},
+    {id:"hall",x0:11,y0:1,x1:28,y1:12,label:"The Hall"},
+    {id:"scr",x0:11,y0:13,x1:28,y1:20,label:"Senior Common Room"}],
+  bath:[
+    {id:"office",x0:1,y0:1,x1:8,y1:7,label:"Clerk's office"},
+    {id:"ball",x0:9,y0:1,x1:32,y1:10,label:"Ball Room"},
+    {id:"corr",x0:1,y0:8,x1:8,y1:13,label:"Passage"},
+    {id:"oct",x0:9,y0:11,x1:18,y1:21,label:"Octagon"},
+    {id:"pump",x0:19,y0:11,x1:32,y1:21,label:"Pump Room"}]
+};
+const SPAWN={present:{x:26,y:20},college:{x:5,y:4},bath:{x:6,y:5}};
+const ERA={
+  present:{title:"The Bodleian Library",when:"The present"},
+  college:{title:"The Founder's Dinner",when:"12 November 1887"},
+  bath:{title:"British Association, Bath",when:"September 1888"}
+};
+
+// ===== People you can talk to =====
+const NPCS={
+  present:[
+    {id:"harker",x:6,y:29,name:"Miss Harker, archivist",color:"#8fb3c9",talk:()=>{
+      const h=hintsFor(sim()); if(!h.length) return ["Every building stands. I have nothing to tell you but thank you."];
+      const n=Math.min(S.hint,h.length-1); S.hint=Math.min(S.hint+1,h.length);
+      return [n===0?"You look like someone who has lost a library. Let me think.":"Something else, then.",h[n]];}}],
+  college:[
+    {id:"pruett",x:6,y:3,name:"Mrs Pruett, cook",color:"#c9a27a",talk:()=>[
+      "You're the new girl? Good. The place cards are on the Master's table in the Hall. Lay them how you like and I'll send the soup up.",
+      "The Master sits at the head, first place, always. They only talk to whoever is beside them.",
+      "And mind Mrs Ellery. She introduces whoever's on her left to whoever's on her right, every time."]},
+    {id:"lowe",x:8,y:7,name:"James Lowe, undergraduate",color:"#7f9cc7",talk:()=>[
+      "I'm waiting at table tonight for a shilling. I keep a diary of everything I see up there.","One day somebody will read it. Probably nobody."]},
+    {id:"A",x:14,y:16,name:P.A.full,color:"#b8433a",talk:()=>[
+      "I shall sit at the head, naturally.","Between ourselves, I want the library to be modern. Lifts! Machines! Mr Dunmore tells me anything can be done with steam."]},
+    {id:"B",x:18,y:17,name:P.B.full,color:"#6d8f6a",talk:()=>[
+      "Ventilation is the great unsolved problem of libraries. Damp, gas, foul air.","I'm told there's an engineer from Swindon here tonight. I'd give a great deal for an hour with him."]},
+    {id:"C",x:21,y:15,name:P.C.full,color:"#3d3d46",talk:()=>[
+      "I keep a little workshop behind the vicarage. Furnaces, fans, that sort of thing.","I have an idea that wants a practical man. A railway man, perhaps."]},
+    {id:"D",x:24,y:17,name:P.D.full,color:"#7a5a3a",talk:()=>[
+      "Came up from Swindon at the Master's invitation.","Someone told me there'd be a clergyman here with ideas about engines. I'd like to meet him."]},
+    {id:"E",x:16,y:19,name:P.E.full,color:"#8a5b9c",talk:()=>[
+      "I cannot bear to sit between two people who haven't been introduced. I simply shan't allow it.","I've asked Miss Fenwick to come to London as my companion. She keeps saying no. Put us side by side and I'll wear her down."]},
+    {id:"F",x:25,y:19,name:P.F.full,color:"#5f8a99",talk:()=>[
+      "I bind the Bodleian's books. Somebody has to.","Mr Dunmore? He has gentle hands for an engineer. He talked about building me a press."]}],
+  bath:[
+    {id:"kitty",x:4,y:10,name:"Kitty Ellery",color:"#c78fb0",talk:()=>[
+      "My aunt sent me to Bath to find a husband, so naturally I'm here for the science.","The clerk decides everything, you know. Who speaks when, in which room."]},
+    {id:"C",x:15,y:3,name:P.C.full,color:"#3d3d46",talk:()=>["I shan't miss Mr Dunmore's demonstration for anything. And Dr Hale on the comet, of course."]},
+    {id:"D",x:24,y:3,name:P.D.full,color:"#7a5a3a",talk:()=>["My engine only fits in the Ball Room.","I mean to hear Mr Rao on calculating machines, and Lady Pell on heating glasshouses. Now there's a boiler problem worth solving."]},
+    {id:"H",x:12,y:14,name:P.H.full,color:"#5d6f9c",talk:()=>["Only Miss Quill's meteorites interest me. The rest is noise."]},
+    {id:"Q",x:16,y:19,name:P.Q.full,color:"#8f7a4a",talk:()=>["I must speak in the morning. My train for the dig leaves at noon.","I'd like to hear Mr Dunmore, since my quarries flood, and Dr Hale."]},
+    {id:"R",x:22,y:14,name:P.R.full,color:"#9c6a4a",talk:()=>["Lady Pell and Miss Quill, please. I collect numbers from people who collect things."]},
+    {id:"Pl",x:29,y:17,name:P.Pl.full,color:"#6a9c74",talk:()=>["Dr Hale and Miss Quill are the only talks worth hearing.","Miss Quill says there's good cheap stone at Headington. I've half a mind to pay for her quarry."]}]
+};
+
+// ===== State =====
+const SAVE="bodleian-founders-dinner-v2";
+const fresh=()=>({screen:"title",era:"present",pos:{present:{...SPAWN.present,dir:"down"},college:{...SPAWN.college,dir:"down"},bath:{...SPAWN.bath,dir:"down"}},
+  seats:HIST_SEATS.slice(),sched:HIST_SCHED.slice(),draftSeats:null,draftSched:null,trips:0,bathKnown:false,log:[],read:{},prevVisible:null,notes:"",hint:0});
 let S;
 try{S=Object.assign(fresh(),JSON.parse(localStorage.getItem(SAVE)||"null")||{});}catch(e){S=fresh();}
-if(window.claude&&window.claude.hot&&window.claude.hot.data&&window.claude.hot.data.S) S=window.claude.hot.data.S;
-if(window.claude&&window.claude.hot&&window.claude.hot.snapshot) window.claude.hot.snapshot(()=>({S}));
+const hot=window.claude&&window.claude.hot;
+if(hot&&hot.data&&hot.data.S) S=hot.data.S;
+if(hot&&hot.snapshot) hot.snapshot(()=>({S}));
 function save(){try{localStorage.setItem(SAVE,JSON.stringify(S));}catch(e){}}
+const sim=()=>simulate(S);
+let ui={sheet:null,dialog:null,sel:null};
 
-function visible(sim){
-  const c={dm:sim.dm,bm:sim.bm,bathOpen:sim.bathOpen&&S.bathKnown};
+function visible(sm){
+  const c={dm:sm.dm,bm:sm.bm,bathOpen:sm.bathOpen&&S.bathKnown};
   return ITEMS.filter(it=>{
     if(!it.when(c)) return false;
-    if(sim.engine) return !!it.ruin;
-    return it.where==="archive"||!sim.lost.has(it.where);
+    if(sm.engine) return !!it.ruin;
+    return it.where==="archive"||!sm.lost.has(it.where);
   });
 }
-
-// ---------- rendering ----------
-const app=document.getElementById("app");
 const esc=s=>String(s).replace(/[&<>"]/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[ch]));
+const app=document.getElementById("app");
+
+// ===== Screens =====
 function render(){
   save();
-  ({title:renderTitle,present:renderPresent,dinner:renderDinner,bath:renderBath,interlude:renderInterlude,won:renderWon})[S.screen]();
+  if(S.screen==="title") return renderTitle();
+  renderWorldShell();
 }
-
 function renderTitle(){
-  app.innerHTML=`<div class="title-screen fade">
+  stopLoop();
+  app.innerHTML=`<div class="title-screen">
     <span class="label">Oxford, the present day</span>
     <h1>The Founder's Dinner</h1>
-    <p class="lede">The Bodleian Library is gone. Where Duke Humfrey's Library stood there is ash, and in the ash one scrap of a page.</p>
+    <p class="lede">The Bodleian Library is gone. Where Duke Humfrey's Library stood there is ash, and in the middle of the Old Schools Quadrangle, on a lectern that somehow survived, one scrap of a page.</p>
     <p class="muted">You can slip back into the past, but only in humble jobs: laying places in a college kitchen, copying out a conference programme. You cannot stop anyone by force. All you can change is who meets whom. Every change ripples forward, and the books on the shelves will tell you what you did.</p>
-    <div class="row"><button class="btn" id="go">Pick up the fragment</button>${S.trips?`<button class="btn ghost" id="reset">Start again</button>`:""}</div>
+    <div class="row"><button class="btn" id="go">${S.trips?"Carry on":"Walk into the ruins"}</button>${S.trips?`<button class="btn ghost" id="reset">Start again</button>`:""}</div>
   </div>`;
-  app.querySelector("#go").onclick=()=>{S.screen="present";render();};
-  const r=app.querySelector("#reset"); if(r) r.onclick=()=>{S=fresh();S.screen="present";render();};
+  app.querySelector("#go").onclick=()=>{S.screen="world";render();};
+  const r=app.querySelector("#reset"); if(r) r.onclick=()=>{S=fresh();S.screen="world";render();};
 }
 
-function fragmentHTML(sim){
-  if(!sim.engine && sim.lost.size===0) return `<div class="fragment saved fade"><span class="tag">Page from the Bodleian accessions register</span>The page is whole now, and dull: a list of books received in 1891. Nothing about any engine.</div>`;
-  if(!sim.engine) return `<div class="fragment fade"><span class="tag">The fragment</span>The page has changed. It no longer mentions any engine. It is a list of repairs: ${[...sim.lost].map(r=>esc(ROOMNAME[r])).join(", ")}. Something you did, or failed to do, still damages the library.</div>`;
-  const where = sim.engine==="dinner" ? "first met at the Founder's Dinner of 1887" : "first met at Bath in 1888, at the British Association meeting";
-  const a = S.trips>=1 ? "Mr A, <b>a man of the cloth</b>," : "Mr A";
-  const b = S.trips>=3 ? "Mr B, <b>an engineer</b>," : "Mr B";
-  return `<div class="fragment fade"><span class="tag">The fragment</span>… it was ${a} and ${b} who ${where}, and between them built the engine that … every volume in the place, and the building after …</div>`;
+function fragmentText(sm,short){
+  if(!sm.engine&&sm.lost.size===0) return {cls:"saved",html:"The page is whole now, and dull: a list of books received in 1891. Nothing about any engine."};
+  if(!sm.engine) return {cls:"",html:`The page no longer mentions any engine. It is a list of repairs: ${[...sm.lost].map(r=>esc(ROOMNAME[r])).join(", ")}.`};
+  const where=sm.engine==="dinner"?"first met at the Founder's Dinner of 1887":"first met at Bath in 1888, at the British Association meeting";
+  const a=S.trips>=1?"Mr A, <b>a man of the cloth</b>,":"Mr A";
+  const b=S.trips>=3?"Mr B, <b>an engineer</b>,":"Mr B";
+  return {cls:"",html:`… it was ${a} and ${b} who ${where}, and between them built the engine that … every volume in the place${short?"":", and the building after"} …`};
 }
 
-function mapSVG(sim,newByRoom){
-  const st=id=>sim.engine?"lost":(sim.lost.has(id)?"lost":"ok");
-  const room=(id,shape,lx,ly)=>{
-    const s=st(id), sel=S.room===id?" sel":"";
-    return `<g class="room ${s==="lost"?"lost":""}${sel}" data-room="${id}" tabindex="0" role="button" aria-label="${esc(ROOMNAME[id])}">
-      ${shape}<text x="${lx}" y="${ly}" text-anchor="middle">${esc(ROOMNAME[id])}</text>
-      <text class="st ${s==="lost"?"bad":"ok"}" x="${lx}" y="${ly+15}" text-anchor="middle">${s==="lost"?"ruined":"standing"}</text>
-      ${newByRoom[id]?`<circle class="newdot" cx="${lx+ (ROOMNAME[id].length*3.3)+8}" cy="${ly-4}" r="4"/>`:""}</g>`;
-  };
-  return `<svg viewBox="0 0 440 330" role="img" aria-label="Plan of the Bodleian buildings">
-    <defs><pattern id="hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="7" height="7" fill="#2a1d22"/><line x1="0" y1="0" x2="0" y2="7" stroke="#c8553d" stroke-width="2"/></pattern></defs>
-    <g class="streets"><path d="M10 22 H430"/><text x="14" y="16">Broad Street</text><path d="M418 30 V320"/><text x="0" y="0" transform="translate(432 200) rotate(90)">Catte Street</text></g>
-    ${room("clar",`<rect class="shape" x="250" y="34" width="150" height="54" rx="2"/>`,325,58)}
-    ${room("duke",`<rect class="shape" x="20" y="34" width="210" height="54" rx="2"/>`,125,58)}
-    ${room("div",`<rect class="shape" x="20" y="98" width="110" height="90" rx="2"/>`,75,140)}
-    ${room("tower",`<path class="shape" d="M140 98 H400 V188 H140 Z M190 116 V170 H350 V116 Z" fill-rule="evenodd"/>`,270,212)}
-    ${room("rad",`<circle class="shape" cx="270" cy="276" r="40"/>`,270,274)}
-  </svg>`;
-}
-
-function renderPresent(){
-  const sim=simulate(S);
-  if(sim.bathOpen && !S.bathKnown){S.bathKnown=true;}
-  const vis=visible(sim);
-  const prev=S.prevVisible?new Set(S.prevVisible):null;
-  const isNew=it=>prev&&!prev.has(it.id);
-  const newByRoom={}; vis.forEach(it=>{if(isNew(it)) newByRoom[it.where]=true;});
-  const standing=sim.engine?0:ROOMS.length-sim.lost.size;
-  const roomItems=vis.filter(it=>it.where===S.room);
-  const roomLost = S.room!=="archive" && (sim.engine||sim.lost.has(S.room));
-  const hints=hintsFor(sim);
-  const lastLog=S.log[S.log.length-1];
-
+function renderWorldShell(){
+  const sm=sim();
+  if(sm.bathOpen&&!S.bathKnown&&S.era==="present") S.bathKnown=true;
+  const e=ERA[S.era];
+  const standing=sm.engine?0:ROOMS.length-sm.lost.size;
+  const fr=fragmentText(sm,true);
   app.innerHTML=`
-  <div class="top"><div><span class="label">The present · timeline ${S.log.length+1}</span><h1>The Bodleian Library</h1>
-    <p class="sub">${sim.engine?"A field of ash between Broad Street and the High.":standing===ROOMS.length?"Every building stands.":"Partly standing. Partly not."}</p></div>
-    <div class="meter" title="${standing} of ${ROOMS.length} buildings standing" aria-label="${standing} of ${ROOMS.length} buildings standing">${ROOMS.map((r,i)=>`<i class="${i<standing?"ok":""}"></i>`).join("")}<span class="label" style="margin-left:6px">${standing}/${ROOMS.length} standing</span></div></div>
-  ${fragmentHTML(sim)}
-  <div class="grid">
-    <div class="panel map">
-      <div class="row" style="justify-content:space-between"><h2>Plan of the library</h2><span class="label">choose a building</span></div>
-      ${mapSVG(sim,newByRoom)}
-      <div class="roomchips">${ROOMS.map(r=>{const l=sim.engine||sim.lost.has(r.id);return `<button class="${l?"lost":""}${S.room===r.id?" sel":""}" data-room="${r.id}">${esc(r.name)}${l?" \u00b7 ruined":""}${newByRoom[r.id]?" \u2022 new":""}</button>`;}).join("")}</div>
-      <button class="book k-record" data-room="archive" style="justify-content:space-between;align-items:center"><span class="spine"></span><span style="flex:1"><span class="t">College Archive</span><br><span class="m">Diaries, letters and records kept in a college attic. These survive whatever happens to the library.</span></span>${newByRoom.archive?`<span class="new">new</span>`:""}</button>
-    </div>
-    <div class="panel">
-      <span class="label">${S.room==="archive"?"Private papers":"Shelves"}</span>
-      <h2>${S.room==="archive"?"College Archive":esc(ROOMNAME[S.room])}</h2>
-      <div class="shelf">
-        ${roomLost?`<p class="ashes">${sim.engine?"Nothing is left here but scorched stone.":"This building is in ruins. Whatever was shelved here is lost."}</p>`:
-          roomItems.length?roomItems.map(it=>`<button class="book k-${it.kind}${S.read[it.id]?" read":""}" data-item="${it.id}"><span class="spine"></span><span><span class="t">${esc(it.title)}</span>${isNew(it)?`<span class="new">new</span>`:""}<br><span class="m">${esc(it.by)}</span></span></button>`).join(""):
-          `<p class="empty">The shelves here hold nothing that bears on your problem.</p>`}
+    <div class="hud">
+      <div><span class="label">${esc(e.when)}${S.era==="present"?" · timeline "+(S.log.length+1):""}</span><h1>${esc(e.title)}</h1><span class="where" id="where"></span></div>
+      <div class="row">
+        ${S.era==="present"?`<div class="meter" aria-label="${standing} of ${ROOMS.length} buildings standing">${ROOMS.map((r,i)=>`<i class="${i<standing?"ok":""}"></i>`).join("")}<span class="label" style="margin-left:4px">${standing}/${ROOMS.length}</span></div>`:""}
+        <button class="btn ghost small" id="casebook">Casebook</button>
       </div>
     </div>
-  </div>
-  <div class="panel">
-    <div class="row" style="justify-content:space-between"><h2>Travel back</h2>${lastLog?`<span class="muted">Last trip: ${esc(lastLog.label)}</span>`:""}</div>
-    <div class="travel">
-      <button class="trip" id="toDinner"><span class="yr">1887</span><h3>The Founder's Dinner</h3><span class="role">You are kitchen staff. You lay the place cards.</span>
-        <span class="flag ${sim.dm.has("C-D")?"bad":"ok"}">${S.trips?(sim.dm.has("C-D")?"Mr A and Mr B still meet here":"Mr A and Mr B no longer meet here"):"Where it began"}</span></button>
-      <button class="trip" id="toBath" ${S.bathKnown?"":"disabled"}><span class="yr">1888</span><h3>British Association, Bath</h3><span class="role">${S.bathKnown?"You are the programme clerk. You set the timetable.":"You have no reason to go here yet."}</span>
-        ${S.bathKnown?`<span class="flag ${sim.engine==="bath"?"bad":(sim.bathOpen?"ok":"")}">${!sim.bathOpen?"Not reached in this timeline":sim.engine==="bath"?"Mr A and Mr B meet here":"Mr A and Mr B do not meet here"}</span>`:""}</button>
-    </div>
-  </div>
-  <div class="grid">
-    <div class="panel">
-      <h2>Casebook</h2>
-      <p class="muted">Every timeline you have made. Restoring one puts the past back the way it was on that trip.</p>
-      <div class="log">${S.log.length?S.log.map((l,i)=>`<div class="entry${i===S.log.length-1?" cur":""}"><span class="n">${i+1}</span><span class="what">${esc(l.label)} <span class="muted">· ${l.engine?"library destroyed":l.standing+"/"+ROOMS.length+" standing"}</span></span><button data-restore="${i}">Restore</button></div>`).join(""):`<p class="empty">No trips yet.</p>`}</div>
-      <label class="label" for="notes">Your notes</label>
-      <textarea id="notes" placeholder="Who is Mr A? Who is Mr B? Which pairs are dangerous?">${esc(S.notes)}</textarea>
-    </div>
-    <div class="panel">
-      <h2>Ask the librarian</h2>
-      ${hints.length?`${hints.slice(0,S.hint).map(h=>`<p class="hint">${esc(h)}</p>`).join("")}
-      ${S.hint<hints.length?`<button class="btn ghost" id="hint">${S.hint?"Another hint":"I'm stuck"}</button>`:`<p class="muted">That is everything the librarian knows.</p>`}`:`<p class="muted">Nothing to ask. The library is whole.</p>`}
-      <details><summary>How it works</summary><div class="shelf" style="margin-top:8px">
-        <p>Read what is on the shelves now. Then travel back and change one arrangement. When you return, books marked <b>new</b> show what changed.</p>
-        <p>Books in a ruined building are lost, but the College Archive always survives.</p>
-        <p>The same arrangement always gives the same result, so you can experiment freely and restore any earlier timeline.</p></div></details>
-    </div>
-  </div>`;
-
-  // wire up
-  app.querySelectorAll("[data-room]").forEach(el=>{
-    const go=()=>{S.room=el.dataset.room;render();};
-    el.addEventListener("click",go);
-    el.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();go();}});
-  });
-  app.querySelectorAll("[data-item]").forEach(el=>el.onclick=()=>openBook(el.dataset.item,sim));
-  app.querySelector("#toDinner").onclick=()=>{S.draft=S.seats.slice();S.sel=null;S.screen="dinner";render();window.scrollTo(0,0);};
-  const tb=app.querySelector("#toBath"); if(S.bathKnown) tb.onclick=()=>{S.draft=S.sched.slice();S.sel=null;S.screen="bath";render();window.scrollTo(0,0);};
-  app.querySelectorAll("[data-restore]").forEach(el=>el.onclick=()=>{
-    const l=S.log[+el.dataset.restore]; S.prevVisible=visible(simulate(S)).map(i=>i.id);
-    S.seats=l.seats.slice(); S.sched=l.sched.slice(); S.hint=0;
-    S.log.push(Object.assign({},l,{label:"Restored timeline "+(+el.dataset.restore+1)}));
-    render();
-  });
-  const n=app.querySelector("#notes"); n.oninput=()=>{S.notes=n.value;save();};
-  const h=app.querySelector("#hint"); if(h) h.onclick=()=>{S.hint++;render();};
+    ${S.era==="present"?`<div class="strip ${fr.cls}">${fr.html}</div>`:""}
+    <div class="stage" id="stage"><canvas id="cv" tabindex="0" aria-label="The scene. Use arrow keys or WASD to walk, E or Space to interact, or tap where you want to go."></canvas><div id="dlg"></div></div>
+    <div class="actionbar"><button class="btn act" id="act" disabled>Nothing here</button>
+      <span class="help">Walk with the arrow keys or WASD and press E or Space to look, talk or read. On a phone, tap where you want to go, or tap a person or a shelf.</span></div>`;
+  app.querySelector("#casebook").onclick=openCasebook;
+  app.querySelector("#act").onclick=()=>interact();
+  startWorld();
+  renderDialog();
 }
 
-function openBook(id,sim){
-  const it=ITEMS.find(i=>i.id===id); if(!it) return;
-  S.read[id]=true; save();
-  const c={dm:sim.dm,bm:sim.bm,bathOpen:sim.bathOpen};
-  const paras=it.dyn?it.dyn(c):it.text;
+// ===== World engine =====
+let cv,ctx,raf=null,last=0,T=32,camX=0,camY=0;
+let player=null,path=[],pendingTarget=null,held={},moveT=0;
+let actors=[];
+const map=()=>MAPS[S.era];
+const tileAt=(x,y)=>{const m=map(); if(y<0||y>=m.length||x<0||x>=m[0].length) return " "; return m[y][x];};
+const regionAt=(x,y)=>(REGIONS[S.era]||[]).find(r=>x>=r.x0&&x<=r.x1&&y>=r.y0&&y<=r.y1);
+const npcAt=(x,y)=>actors.find(a=>a.x===x&&a.y===y);
+const walkable=(x,y)=>WALK.has(tileAt(x,y))&&!npcAt(x,y);
+
+function startWorld(){
+  cv=document.getElementById("cv"); ctx=cv.getContext("2d");
+  actors=(NPCS[S.era]||[]).map(n=>({...n}));
+  const p=S.pos[S.era]||{...SPAWN[S.era],dir:"down"};
+  player={x:p.x,y:p.y,fx:p.x,fy:p.y,dir:p.dir||"down",step:0};
+  path=[];pendingTarget=null;
+  resize();
+  cv.onpointerdown=onTap;
+  stopLoop(); last=performance.now(); raf=requestAnimationFrame(loop);
+  cv.focus({preventScroll:true});
+}
+function stopLoop(){if(raf) cancelAnimationFrame(raf); raf=null;}
+function resize(){
+  if(!cv) return;
+  const w=cv.parentElement.clientWidth;
+  T=Math.round(Math.max(24,Math.min(40,w/17)));
+  const h=Math.round(Math.min(window.innerHeight*0.62,T*15,620));
+  const dpr=window.devicePixelRatio||1;
+  cv.width=Math.round(w*dpr); cv.height=Math.round(h*dpr); cv.style.height=h+"px";
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+}
+window.addEventListener("resize",resize);
+
+const DIRS={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]};
+const KEYS={ArrowUp:"up",KeyW:"up",ArrowDown:"down",KeyS:"down",ArrowLeft:"left",KeyA:"left",ArrowRight:"right",KeyD:"right"};
+window.addEventListener("keydown",e=>{
+  if(S.screen!=="world"||!cv) return;
+  if(ui.sheet){ if(e.key==="Escape") closeSheet(); return; }
+  if(e.target&&(e.target.tagName==="TEXTAREA"||e.target.tagName==="INPUT")) return;
+  if(ui.dialog){ if(["KeyE","Space","Enter","Escape"].includes(e.code)||e.key==="Escape"){e.preventDefault();advanceDialog();} return; }
+  if(KEYS[e.code]){e.preventDefault(); held[KEYS[e.code]]=performance.now(); path=[]; pendingTarget=null;}
+  else if(e.code==="KeyE"||e.code==="Space"||e.code==="Enter"){e.preventDefault(); interact();}
+});
+window.addEventListener("keyup",e=>{if(KEYS[e.code]) delete held[KEYS[e.code]];});
+window.addEventListener("blur",()=>{held={};});
+
+function heldDir(){let best=null,t=-1;for(const d in held) if(held[d]>t){t=held[d];best=d;} return best;}
+
+function onTap(ev){
+  if(ui.dialog){advanceDialog();return;}
+  const r=cv.getBoundingClientRect();
+  const tx=Math.floor((ev.clientX-r.left+camX)/T), ty=Math.floor((ev.clientY-r.top+camY)/T);
+  if(interactiveAt(tx,ty)){
+    if(Math.abs(tx-player.x)+Math.abs(ty-player.y)===1){face(tx,ty);interact();return;}
+    const goal=bfs(player.x,player.y,(x,y)=>Math.abs(x-tx)+Math.abs(y-ty)===1);
+    if(goal){path=goal;pendingTarget={x:tx,y:ty};}
+    return;
+  }
+  const goal=bfs(player.x,player.y,(x,y)=>x===tx&&y===ty);
+  if(goal){path=goal;pendingTarget=null;}
+}
+function bfs(sx,sy,isGoal){
+  const m=map(),W=m[0].length,H=m.length,prev=new Map(),q=[[sx,sy]];prev.set(sx+","+sy,null);
+  while(q.length){
+    const [x,y]=q.shift();
+    if(isGoal(x,y)&&!(x===sx&&y===sy)){const out=[];let k=x+","+y;while(k!==sx+","+sy){const [a,b]=k.split(",").map(Number);out.unshift({x:a,y:b});k=prev.get(k);}return out;}
+    for(const [dx,dy] of Object.values(DIRS)){const nx=x+dx,ny=y+dy,k=nx+","+ny;
+      if(nx<0||ny<0||nx>=W||ny>=H||prev.has(k)||!walkable(nx,ny)) continue; prev.set(k,x+","+y); q.push([nx,ny]);}
+  }
+  return null;
+}
+function face(tx,ty){const dx=tx-player.x,dy=ty-player.y; player.dir=Math.abs(dx)>Math.abs(dy)?(dx>0?"right":"left"):(dy>0?"down":"up");}
+
+const MOVE_MS=135;
+function loop(now){
+  const dt=Math.min(50,now-last); last=now;
+  update(dt); draw(now);
+  raf=requestAnimationFrame(loop);
+}
+function update(dt){
+  if(ui.sheet||ui.dialog) return;
+  const moving=player.fx!==player.x||player.fy!==player.y;
+  if(moving){
+    moveT+=dt; const k=Math.min(1,moveT/MOVE_MS);
+    player.fx=player.ox+(player.x-player.ox)*k; player.fy=player.oy+(player.y-player.oy)*k;
+    if(k>=1){player.fx=player.x;player.fy=player.y;player.step++;
+      S.pos[S.era]={x:player.x,y:player.y,dir:player.dir};
+      if(!path.length&&pendingTarget){const t=pendingTarget;pendingTarget=null;face(t.x,t.y);interact();}
+    }
+    return;
+  }
+  let d=null,nx,ny;
+  if(path.length){const n=path[0]; if(!walkable(n.x,n.y)){path=[];return;} face(n.x,n.y); nx=n.x;ny=n.y; path.shift();}
+  else{d=heldDir(); if(!d) return; player.dir=d; nx=player.x+DIRS[d][0]; ny=player.y+DIRS[d][1]; if(!walkable(nx,ny)) return;}
+  player.ox=player.x;player.oy=player.y;player.x=nx;player.y=ny;moveT=0;
+}
+
+// ===== Interaction =====
+const INTERACTIVE=new Set(["S","B","L","T","c","C","K","P","~"]);
+function interactiveAt(x,y){return !!npcAt(x,y)||INTERACTIVE.has(tileAt(x,y));}
+function target(){
+  const [dx,dy]=DIRS[player.dir]; const f={x:player.x+dx,y:player.y+dy};
+  if(interactiveAt(f.x,f.y)) return f;
+  for(const [ax,ay] of Object.values(DIRS)){const x=player.x+ax,y=player.y+ay; if(npcAt(x,y)) return {x,y};}
+  for(const [ax,ay] of Object.values(DIRS)){const x=player.x+ax,y=player.y+ay; if(interactiveAt(x,y)) return {x,y};}
+  return null;
+}
+function describe(t){
+  if(!t) return null;
+  const n=npcAt(t.x,t.y); if(n) return "Talk to "+n.name.split(",")[0];
+  const ch=tileAt(t.x,t.y), reg=regionAt(t.x,t.y);
+  const era=S.era;
+  if(era==="present"){
+    if(ch==="L") return "Read the fragment";
+    if(ch==="B") return "Search the archive boxes";
+    if(ch==="S") return "Look at the shelves";
+    if(ch==="T") return "Look at the desk";
+  }
+  if(era==="college"){
+    if(ch==="T"&&reg&&reg.id==="hall"||ch==="c") return "Lay the place cards";
+    if(ch==="C") return "Wind the clock (go home)";
+    if(ch==="P") return "Look at the portrait";
+    if(ch==="K") return reg&&reg.id==="kitchen"?"Look at the range":"Look at the fire";
+    if(ch==="T") return "Look at the table";
+  }
+  if(era==="bath"){
+    if(ch==="T"&&reg&&reg.id==="office") return "Write the programme";
+    if(ch==="C") return "Wind the clock (go home)";
+    if(ch==="~") return "Look at the spring";
+    if(ch==="L") return "Look at the lectern";
+    if(ch==="c") return "Look at the chairs";
+    if(ch==="T") return "Look at the table";
+  }
+  return "Look";
+}
+function interact(){
+  const t=target(); if(!t) return;
+  face(t.x,t.y);
+  const n=npcAt(t.x,t.y); if(n){openDialog(n.name.split(",")[0],n.talk());return;}
+  const ch=tileAt(t.x,t.y), reg=regionAt(t.x,t.y), sm=sim();
+  if(S.era==="present"){
+    if(ch==="L") return openTravel();
+    if(ch==="B") return openShelf("archive");
+    if(ch==="S"&&reg) return openShelf(reg.id);
+    if(ch==="T") return openDialog("",[sm.engine||sm.lost.has("clar")?"A reading desk, split by the heat.":"A reading desk. Someone has left a pencil and a ticket for the Radcliffe Camera."]);
+  }
+  if(S.era==="college"){
+    if((ch==="T"&&reg&&reg.id==="hall")||ch==="c") return openDinner();
+    if(ch==="C") return goHome();
+    if(ch==="P") return openDialog("",[["The Founder, 1587, looking as if he disapproves of soup.","A former Master. The painter has given him three hands, and nobody has mentioned it.","Bishop Somebody. The plaque has worn away.","A portrait of a dog, given a Fellowship in 1702 as a joke that was never undone."][Math.floor(t.x/4)%4]]);
+    if(ch==="K") return openDialog("",[reg&&reg.id==="kitchen"?"The kitchen range, roaring. Turbot for twelve is steaming on top.":"A fire in the grate. Someone has tucked a page of the Times behind the coal scuttle."]);
+    if(ch==="T") return openDialog("",["A side table with decanters of port and a bowl of walnuts."]);
+  }
+  if(S.era==="bath"){
+    if(ch==="T"&&reg&&reg.id==="office") return openBath();
+    if(ch==="C") return goHome();
+    if(ch==="~") return openDialog("",["The hot spring. The water tastes of warm pennies, and the Pump Room smells of eggs. People come here to meet each other and pretend it's for their health."]);
+    if(ch==="L") return openDialog("",["The speaker's lectern."]);
+    if(ch==="c") return openDialog("",["Gilt chairs, set out in rows for the talks."]);
+    if(ch==="T") return openDialog("",["A table of programmes from last year. Nobody has taken one."]);
+  }
+}
+
+// ===== Dialog =====
+function openDialog(who,lines){ui.dialog={who,lines,i:0};renderDialog();}
+function advanceDialog(){if(!ui.dialog) return; ui.dialog.i++; if(ui.dialog.i>=ui.dialog.lines.length) ui.dialog=null; renderDialog();}
+function renderDialog(){
+  const el=document.getElementById("dlg"); if(!el) return;
+  if(!ui.dialog){el.innerHTML="";return;}
+  const d=ui.dialog;
+  el.innerHTML=`<div class="dialog" role="dialog" aria-live="polite">${d.who?`<span class="who">${esc(d.who)}</span>`:""}<span class="say">${esc(d.lines[d.i])}</span><span class="more">${d.i<d.lines.length-1?"More (E or tap)":"Close (E or tap)"}</span></div>`;
+  el.firstChild.onclick=advanceDialog;
+  save();
+}
+
+// ===== Drawing =====
+const PAL={
+  present:{bg:"#0b0f19",pave:"#232a3d",pave2:"#20273a",floor:"#2c3449",floor2:"#2a3246",wall:"#4a5470",wallTop:"#626e8f",shelf:"#5a4026",light:"rgba(255,214,140,",dark:0.72},
+  ruin:{floor:"#2a2424",floor2:"#262020",wall:"#3b3232",wallTop:"#4a3e3c",shelf:"#1b1414"},
+  college:{bg:"#0d0905",pave:"#3a2f26",pave2:"#3a2f26",floor:"#5b3d24",floor2:"#553820",kitchen:"#4a4038",kitchen2:"#463c34",wall:"#2b1d14",wallTop:"#4a3322",shelf:"#5a4026",light:"rgba(255,190,110,",dark:0.62},
+  bath:{bg:"#1a1812",pave:"#b9ad92",pave2:"#b3a78c",floor:"#d8ccb0",floor2:"#d2c6a9",parquet:"#b58e5d",parquet2:"#ad8655",wall:"#8d7f63",wallTop:"#a99b7d",shelf:"#6a5034",light:"rgba(255,255,255,",dark:0.18}
+};
+function hash(x,y){let h=(x*374761393+y*668265263)^(x*y); h=(h^(h>>>13))*1274126177; return ((h^(h>>>16))>>>0)/4294967295;}
+let cache={sm:null,lostSet:null,newRooms:null,frame:-1};
+function draw(now){
+  if(!ctx) return;
+  const W=cv.clientWidth,H=cv.clientHeight,m=map(),MW=m[0].length,MH=m.length;
+  const pal=PAL[S.era];
+  const sm=sim(); const engine=sm.engine; const lost=sm.lost;
+  // new-books glint
+  const vis=S.era==="present"?visible(sm):[]; const prev=S.prevVisible?new Set(S.prevVisible):null;
+  const newRooms=new Set(vis.filter(i=>prev&&!prev.has(i.id)&&!S.read[i.id]).map(i=>i.where));
+  // camera
+  const px=player.fx*T+T/2, py=player.fy*T+T/2;
+  camX=Math.max(0,Math.min(MW*T-W,px-W/2)); camY=Math.max(0,Math.min(MH*T-H,py-H/2));
+  if(MW*T<W) camX=-(W-MW*T)/2; if(MH*T<H) camY=-(H-MH*T)/2;
+  ctx.fillStyle=pal.bg; ctx.fillRect(0,0,W,H);
+  const x0=Math.max(0,Math.floor(camX/T)),y0=Math.max(0,Math.floor(camY/T)),x1=Math.min(MW-1,Math.ceil((camX+W)/T)),y1=Math.min(MH-1,Math.ceil((camY+H)/T));
+  for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){
+    const ch=m[y][x], sx=x*T-camX, sy=y*T-camY, reg=regionAt(x,y);
+    const ruined=S.era==="present"&&reg&&reg.id!=="archive"&&(engine||lost.has(reg.id));
+    drawTile(ch,sx,sy,x,y,reg,ruined,pal,newRooms,now);
+  }
+  // room labels
+  ctx.textBaseline="top";
+  for(const r of REGIONS[S.era]||[]){
+    const sx=(r.x0+1)*T-camX+4, sy=(r.y0+1)*T-camY+(S.era==="present"&&r.id!=="tower"&&r.id!=="rad"&&r.id!=="div"&&r.id!=="archive"?T+2:2);
+    const ruined=S.era==="present"&&r.id!=="archive"&&(engine||lost.has(r.id));
+    ctx.font=`${Math.round(T*0.42)}px "IM Fell English SC", Georgia, serif`;
+    ctx.fillStyle=S.era==="bath"?"rgba(60,45,25,.7)":ruined?"rgba(200,85,61,.85)":"rgba(212,169,78,.85)";
+    ctx.fillText(r.label+(ruined?" (ruined)":""),sx,sy);
+  }
+  // actors
+  for(const a of actors) drawPerson(a.x*T-camX,a.y*T-camY,a.color,"down",0,false,a);
+  drawPerson(player.fx*T-camX,player.fy*T-camY,S.era==="present"?"#d4a94e":S.era==="college"?"#e8e2d4":"#3f5a7a",player.dir,player.step,true);
+  // names near player
+  ctx.textBaseline="bottom"; ctx.textAlign="center"; ctx.font=`${Math.round(T*0.36)}px "Alegreya Sans", sans-serif`;
+  for(const a of actors){ if(Math.abs(a.x-player.x)+Math.abs(a.y-player.y)<=3){
+    const tx=a.x*T-camX+T/2, ty=a.y*T-camY-2; const label=a.name.split(",")[0];
+    const w=ctx.measureText(label).width+8; ctx.fillStyle="rgba(10,12,20,.75)"; ctx.fillRect(tx-w/2,ty-T*0.42,w,T*0.42);
+    ctx.fillStyle="#f1e6c8"; ctx.fillText(label,tx,ty-1);} }
+  ctx.textAlign="left";
+  // lantern / candle light
+  const dark=S.era==="present"&&!engine&&lost.size===0?0.4:pal.dark;
+  if(dark>0){
+    const g=ctx.createRadialGradient(px-camX,py-camY,T*2.5,px-camX,py-camY,Math.max(W,H)*0.62);
+    g.addColorStop(0,"rgba(0,0,0,0)"); g.addColorStop(1,`rgba(0,0,0,${dark})`);
+    ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+    const g2=ctx.createRadialGradient(px-camX,py-camY,0,px-camX,py-camY,T*3);
+    g2.addColorStop(0,pal.light+"0.10)"); g2.addColorStop(1,pal.light+"0)"); ctx.fillStyle=g2; ctx.fillRect(0,0,W,H);
+  }
+  // prompt + place name
+  const t=target(), label=describe(t), act=document.getElementById("act");
+  if(act){ const want=label||"Nothing here"; if(act.textContent!==want){act.textContent=want;} act.disabled=!label; }
+  const wh=document.getElementById("where"); const reg=regionAt(player.x,player.y);
+  if(wh){const w=reg?reg.label:(S.era==="present"?"Outside, among the rubble of Broad Street":S.era==="bath"?"Outside":"Outside"); if(wh.textContent!==w) wh.textContent=w;}
+}
+function drawTile(ch,sx,sy,x,y,reg,ruined,pal,newRooms,now){
+  const R=PAL.ruin; const alt=(x+y)%2;
+  let floor=pal.floor, floor2=pal.floor2;
+  if(S.era==="college"&&reg&&reg.id==="kitchen"){floor=pal.kitchen;floor2=pal.kitchen2;}
+  if(S.era==="bath"&&reg&&reg.id==="ball"){floor=pal.parquet;floor2=pal.parquet2;}
+  if(ruined){floor=R.floor;floor2=R.floor2;}
+  const base=(c)=>{ctx.fillStyle=c;ctx.fillRect(sx,sy,T+1,T+1);};
+  if(ch===" "){return;}
+  if(ch===","){base(ruined?R.floor:(alt?pal.pave:pal.pave2));
+    if(S.era==="present"&&!ruined&&hash(x,y)>.82){ctx.fillStyle="rgba(255,255,255,.04)";ctx.fillRect(sx+T*.2,sy+T*.3,T*.5,T*.15);}
+    if(ruined) rubble(sx,sy,x,y); return;}
+  if(ch==="."||ch==="D"){base(alt?floor:floor2);
+    if(S.era==="college"&&reg&&reg.id!=="kitchen"){ctx.strokeStyle="rgba(0,0,0,.18)";ctx.beginPath();ctx.moveTo(sx,sy+T/2);ctx.lineTo(sx+T,sy+T/2);ctx.stroke();}
+    if(ch==="D"){ctx.fillStyle="rgba(0,0,0,.18)";ctx.fillRect(sx,sy,T,T);}
+    if(ruined) rubble(sx,sy,x,y); return;}
+  if(ch==="#"){
+    const broken=ruined&&hash(x,y)>.55;
+    ctx.fillStyle=ruined?R.wall:pal.wall; ctx.fillRect(sx,sy,T+1,T+1);
+    ctx.fillStyle=ruined?R.wallTop:pal.wallTop; ctx.fillRect(sx,sy,T+1,T*.35);
+    if(broken){ctx.fillStyle=R.floor;ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(sx+T*.6,sy);ctx.lineTo(sx+T*.2,sy+T*.7);ctx.closePath();ctx.fill();}
+    return;}
+  // furniture sits on floor
+  base(ruined?R.floor:(alt?floor:floor2));
+  if(ch==="S"){
+    const charred=ruined;
+    ctx.fillStyle=charred?R.shelf:pal.shelf; ctx.fillRect(sx+2,sy+2,T-4,T-4);
+    if(!charred){for(let i=0;i<5;i++){const h=hash(x*7+i,y*3);ctx.fillStyle=["#8a3b2e","#2f4f6b","#6b5a2e","#3d5e3a","#6a4a6e"][Math.floor(h*5)];ctx.fillRect(sx+4+i*(T-8)/5,sy+5+h*4,(T-8)/5-1,T-12-h*4);}}
+    else{ctx.fillStyle="rgba(200,85,61,"+(0.35+0.25*Math.sin(now/400+x+y))+")";ctx.fillRect(sx+T*.3,sy+T*.6,3,3);ctx.fillRect(sx+T*.6,sy+T*.4,2,2);}
+    if(S.era==="present"&&reg&&newRooms.has(reg.id)&&!charred){ctx.strokeStyle=`rgba(212,169,78,${0.5+0.4*Math.sin(now/300)})`;ctx.lineWidth=2;ctx.strokeRect(sx+2,sy+2,T-4,T-4);ctx.lineWidth=1;}
+    return;}
+  if(ch==="B"){ctx.fillStyle="#7a6648";ctx.fillRect(sx+4,sy+6,T-8,T-10);ctx.fillStyle="#5d4d36";ctx.fillRect(sx+4,sy+6,T-8,4);
+    if(newRooms.has("archive")){ctx.strokeStyle=`rgba(212,169,78,${0.5+0.4*Math.sin(now/300)})`;ctx.lineWidth=2;ctx.strokeRect(sx+3,sy+5,T-6,T-8);ctx.lineWidth=1;} return;}
+  if(ch==="L"){ctx.fillStyle="#3a2c1c";ctx.fillRect(sx+T*.42,sy+T*.45,T*.16,T*.5);ctx.fillStyle="#6a4f30";ctx.fillRect(sx+T*.18,sy+T*.25,T*.64,T*.28);
+    if(S.era==="present"){ctx.fillStyle=`rgba(239,228,204,${0.75+0.2*Math.sin(now/500)})`;ctx.fillRect(sx+T*.26,sy+T*.29,T*.48,T*.18);
+      const g=ctx.createRadialGradient(sx+T/2,sy+T/2,1,sx+T/2,sy+T/2,T*1.6);g.addColorStop(0,"rgba(212,169,78,.25)");g.addColorStop(1,"rgba(212,169,78,0)");ctx.fillStyle=g;ctx.fillRect(sx-T*1.5,sy-T*1.5,T*4,T*4);}
+    return;}
+  if(ch==="T"){ctx.fillStyle=S.era==="bath"?"#8a6a44":"#7a4f2a";ctx.fillRect(sx,sy+T*.15,T+1,T*.7);ctx.fillStyle="rgba(255,255,255,.08)";ctx.fillRect(sx,sy+T*.15,T+1,3);
+    if(S.era==="college"&&reg&&reg.id==="hall"){ctx.fillStyle="#efe4cc";ctx.beginPath();ctx.arc(sx+T/2,sy+T/2,T*.16,0,7);ctx.fill();}
+    return;}
+  if(ch==="c"){ctx.fillStyle=S.era==="bath"?"#c9a24e":"#4a2f1a";ctx.fillRect(sx+T*.25,sy+T*.25,T*.5,T*.5);
+    if(S.era==="college"){const i=[15,17,19,21,23,25].indexOf(x); const seats=S.draftSeats||S.seats; if(i>=0){ctx.fillStyle="#efe4cc";ctx.fillRect(sx+T*.1,sy+T*.62,T*.8,T*.32);
+      ctx.fillStyle="#2b2418";ctx.font=`${Math.round(T*.24)}px "IM Fell English", Georgia, serif`;ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(P[seats[i]].name.split(" ").pop(),sx+T/2,sy+T*.79);ctx.textAlign="left";}}
+    return;}
+  if(ch==="C"){ctx.fillStyle="#3a2a1a";ctx.fillRect(sx+T*.3,sy+2,T*.4,T-4);ctx.fillStyle="#efe4cc";ctx.beginPath();ctx.arc(sx+T/2,sy+T*.3,T*.14,0,7);ctx.fill();
+    ctx.strokeStyle="#2b2418";ctx.beginPath();ctx.moveTo(sx+T/2,sy+T*.3);ctx.lineTo(sx+T/2+Math.cos(now/700)*T*.1,sy+T*.3+Math.sin(now/700)*T*.1);ctx.stroke();return;}
+  if(ch==="K"){ctx.fillStyle="#222";ctx.fillRect(sx+2,sy+4,T-4,T-6);ctx.fillStyle=`rgba(255,${120+Math.floor(40*Math.sin(now/120+x))},40,.8)`;ctx.fillRect(sx+T*.3,sy+T*.55,T*.4,T*.25);return;}
+  if(ch==="P"){ctx.fillStyle=pal.wall;ctx.fillRect(sx,sy,T+1,T*.4);ctx.fillStyle="#b08a3e";ctx.fillRect(sx+T*.2,sy+2,T*.6,T*.5);ctx.fillStyle="#3b2a20";ctx.fillRect(sx+T*.27,sy+5,T*.46,T*.38);return;}
+  if(ch==="~"){ctx.fillStyle="#6f9fa0";ctx.fillRect(sx,sy,T+1,T+1);ctx.strokeStyle="rgba(255,255,255,.35)";ctx.beginPath();const o=(now/600+x+y)%1*T;ctx.moveTo(sx+2,sy+o);ctx.quadraticCurveTo(sx+T/2,sy+o-4,sx+T-2,sy+o);ctx.stroke();return;}
+}
+function rubble(sx,sy,x,y){
+  const h=hash(x,y); if(h<.45) return;
+  ctx.fillStyle="#3d3434"; ctx.beginPath(); ctx.arc(sx+T*(.2+.6*hash(y,x)),sy+T*(.2+.6*h),T*.12,0,7); ctx.fill();
+  if(h>.8){ctx.fillStyle="#4a3f3c";ctx.fillRect(sx+T*.5,sy+T*.2,T*.25,T*.15);}
+}
+function drawPerson(sx,sy,color,dir,step,isPlayer,npc){
+  const cx=sx+T/2, cy=sy+T/2, bob=isPlayer&&(player.fx!==player.x||player.fy!==player.y)?Math.sin(step*Math.PI)*1.5:0;
+  ctx.fillStyle="rgba(0,0,0,.3)"; ctx.beginPath(); ctx.ellipse(cx,sy+T*.88,T*.28,T*.09,0,0,7); ctx.fill();
+  ctx.fillStyle=color; ctx.beginPath(); ctx.moveTo(cx-T*.26,sy+T*.86); ctx.lineTo(cx+T*.26,sy+T*.86); ctx.lineTo(cx+T*.18,sy+T*.42-bob); ctx.lineTo(cx-T*.18,sy+T*.42-bob); ctx.closePath(); ctx.fill();
+  ctx.fillStyle="#e6c9a8"; ctx.beginPath(); ctx.arc(cx,sy+T*.3-bob,T*.16,0,7); ctx.fill();
+  if(isPlayer){ctx.fillStyle=S.era==="college"?"#fff":"#2b2418"; if(S.era==="college"){ctx.fillRect(cx-T*.17,sy+T*.12-bob,T*.34,T*.08);} else {ctx.fillRect(cx-T*.18,sy+T*.15-bob,T*.36,T*.06);}
+    const [dx,dy]=DIRS[dir]; ctx.fillStyle="#2b2418"; ctx.fillRect(cx+dx*T*.08-1.5,sy+T*.3-bob+dy*T*.05-1,3,3);}
+  if(npc&&npc.id==="C"){ctx.fillStyle="#fff";ctx.fillRect(cx-T*.05,sy+T*.44,T*.1,T*.05);}
+}
+
+// ===== Sheets =====
+function openSheet(html,wire,cls){
+  closeSheet(true);
   const sc=document.createElement("div"); sc.className="scrim";
-  sc.innerHTML=`<div class="page" role="dialog" aria-modal="true" aria-label="${esc(it.title)}"><h3>${esc(it.title)}</h3><span class="by">${esc(it.by)}</span>${paras.map(p=>`<p>${esc(p)}</p>`).join("")}<button class="close">Put it back</button></div>`;
-  const close=()=>{sc.remove();render();};
-  sc.onclick=e=>{if(e.target===sc) close();};
-  sc.querySelector(".close").onclick=close;
-  document.addEventListener("keydown",function k(e){if(e.key==="Escape"){document.removeEventListener("keydown",k);if(sc.isConnected)close();}});
-  document.body.appendChild(sc); sc.querySelector(".close").focus();
+  sc.innerHTML=cls==="page"?html:`<div class="sheet" role="dialog" aria-modal="true">${html}</div>`;
+  sc.addEventListener("pointerdown",e=>{if(e.target===sc) closeSheet();});
+  document.body.appendChild(sc); ui.sheet=sc; held={};
+  wire&&wire(sc);
+  const f=sc.querySelector(".x,.close,button"); if(f) f.focus();
+}
+function closeSheet(silent){if(ui.sheet){ui.sheet.remove();ui.sheet=null;} if(!silent&&cv) cv.focus({preventScroll:true}); save();}
+
+function openShelf(roomId){
+  const sm=sim(), vis=visible(sm), prev=S.prevVisible?new Set(S.prevVisible):null;
+  const isNew=it=>prev&&!prev.has(it.id);
+  const lost=roomId!=="archive"&&(sm.engine||sm.lost.has(roomId));
+  const items=vis.filter(it=>it.where===roomId);
+  const name=roomId==="archive"?"College Archive":ROOMNAME[roomId];
+  openSheet(`<div class="head"><div><span class="label">${roomId==="archive"?"Private papers. These survive whatever happens to the library.":"Shelves"}</span><h2>${esc(name)}</h2></div><button class="x">Close</button></div>
+    <div class="shelf">${lost?`<p class="ashes">${sm.engine?"Nothing here but scorched stone and the smell of smoke.":"The building is in ruins. Whatever was shelved here is lost."}</p>`:
+    items.length?items.map(it=>`<button class="book k-${it.kind}${S.read[it.id]?" read":""}" data-item="${it.id}"><span class="spine"></span><span><span class="t">${esc(it.title)}</span>${isNew(it)?`<span class="new">new</span>`:""}<br><span class="m">${esc(it.by)}</span></span></button>`).join(""):
+    `<p class="empty">Nothing on these shelves bears on your problem.</p>`}</div>`,
+  sc=>{sc.querySelector(".x").onclick=()=>closeSheet();
+    sc.querySelectorAll("[data-item]").forEach(b=>b.onclick=()=>openBook(b.dataset.item,()=>openShelf(roomId)));});
+}
+function openBook(id,back){
+  const it=ITEMS.find(i=>i.id===id); if(!it) return; S.read[id]=true;
+  const sm=sim(); const paras=it.dyn?it.dyn({dm:sm.dm,bm:sm.bm,bathOpen:sm.bathOpen}):it.text;
+  openSheet(`<div class="page" role="dialog" aria-modal="true"><h3>${esc(it.title)}</h3><span class="by">${esc(it.by)}</span>${paras.map(p=>`<p>${esc(p)}</p>`).join("")}<button class="close">Put it back</button></div>`,
+    sc=>{sc.querySelector(".close").onclick=()=>back?back():closeSheet();},"page");
+}
+function openTravel(){
+  const sm=sim(), fr=fragmentText(sm,false);
+  openSheet(`<div class="head"><div><span class="label">On the lectern</span><h2>The fragment</h2></div><button class="x">Close</button></div>
+    <div class="fragment">${fr.html}</div>
+    <p class="muted">Hold the page and think hard about a moment in its past, and the quadrangle starts to blur.</p>
+    <div class="travel">
+      <button class="trip" id="toDinner"><span class="yr">1887</span><h3>The Founder's Dinner</h3><span class="role">You'll be kitchen staff. You lay the place cards.</span>
+        <span class="flag ${sm.dm.has("C-D")?"bad":"ok"}">${S.trips?(sm.dm.has("C-D")?"Mr A and Mr B still meet here":"Mr A and Mr B no longer meet here"):"Where it began"}</span></button>
+      <button class="trip" id="toBath" ${S.bathKnown?"":"disabled"}><span class="yr">1888</span><h3>British Association, Bath</h3><span class="role">${S.bathKnown?"You'll be the programme clerk. You set the timetable.":"You have no reason to go here yet."}</span>
+        ${S.bathKnown?`<span class="flag ${sm.engine==="bath"?"bad":(sm.bathOpen?"ok":"")}">${!sm.bathOpen?"Not reached in this timeline":sm.engine==="bath"?"Mr A and Mr B meet here":"Mr A and Mr B do not meet here"}</span>`:""}</button>
+    </div>`,
+  sc=>{sc.querySelector(".x").onclick=()=>closeSheet();
+    sc.querySelector("#toDinner").onclick=()=>travel("college");
+    if(S.bathKnown) sc.querySelector("#toBath").onclick=()=>travel("bath");});
+}
+function travel(era){
+  closeSheet(true);
+  if(era==="college") S.draftSeats=S.seats.slice();
+  if(era==="bath") S.draftSched=S.sched.slice();
+  S.era=era; S.pos[era]={...SPAWN[era],dir:"down"}; ui.dialog=null;
+  render();
+  openDialog("",era==="college"?["The quadrangle dissolves into steam and the smell of roasting meat. You're in an apron, in a college kitchen, in 1887.","The guests are gathering in the Senior Common Room. You could listen in before you lay the table."]:
+    ["Bath, September 1888. Ink on your fingers, a stack of letters from speakers on your desk.","The programme isn't printed yet. You could find the speakers first and hear what they want."]);
+}
+function goHome(){
+  openSheet(`<div class="head"><h2>Go home?</h2><button class="x">Stay</button></div><p>If you wind the clock now you'll return to the present and leave this evening exactly as it was.</p>
+    <div class="row"><button class="btn" id="home">Return to the present</button></div>`,
+  sc=>{sc.querySelector(".x").onclick=()=>closeSheet(); sc.querySelector("#home").onclick=()=>{closeSheet(true);S.era="present";S.pos.present={...SPAWN.present,dir:"up"};render();};});
 }
 
 // ----- dinner planner -----
-function renderDinner(){
-  const d=S.draft, m=dinnerMeet(d);
-  app.innerHTML=`
-  <div class="top"><div><span class="label">12 November 1887 · the college kitchens</span><h1>The Founder's Dinner</h1>
-    <p class="sub">Cook has handed you the place cards for the Master's table.</p></div>
-    <button class="btn ghost" id="back">Return without changing anything</button></div>
-  <p class="briefing">Six places along one side of the Master's table. Tap a card, then tap another to swap them. Lay the table how you like, then send the soup up.</p>
-  <div class="rules">
-    <div class="rule"><b>The Master</b> takes the first place at the head. He will not move.</div>
-    <div class="rule"><b>Conversation</b> only happens between neighbours.</div>
-    <div class="rule"><b>Mrs Ellery</b> introduces whoever sits on her left to whoever sits on her right.</div>
-  </div>
-  <div class="table" role="list">${d.map((p,i)=>`<button class="seat${i===0?" fixed":""}${S.sel===i?" sel":""}" data-seat="${i}" role="listitem" ${i===0?'aria-disabled="true"':""}><span class="no">Place ${i+1}</span><span class="nm">${esc(P[p].name)}</span><span class="ds">${esc(P[p].desc)}</span></button>`).join("")}</div>
-  <div class="panel"><span class="label">Who will talk to whom tonight</span>
-    <div class="talks">${[...m.entries()].map(([k,how])=>{const [a,b]=k.split("-");return `<span class="chip${how.startsWith("intro")?" intro":""}">${esc(P[a].name)} & ${esc(P[b].name)}${how.startsWith("intro")?" (introduced)":""}</span>`;}).join("")}</div></div>
-  <div class="row"><button class="btn" id="serve">Serve dinner</button><button class="btn ghost" id="hist">Reset to the original seating</button></div>`;
-  app.querySelectorAll("[data-seat]").forEach(el=>el.onclick=()=>{
-    const i=+el.dataset.seat; if(i===0) return;
-    if(S.sel===null||S.sel===undefined){S.sel=i;}
-    else if(S.sel===i){S.sel=null;}
-    else{const t=d[i];d[i]=d[S.sel];d[S.sel]=t;S.sel=null;}
-    render();
+function openDinner(){
+  const d=S.draftSeats||(S.draftSeats=S.seats.slice()), m=dinnerMeet(d);
+  openSheet(`<div class="head"><div><span class="label">The Master's table</span><h2>Place cards</h2></div><button class="x">Back to the kitchen</button></div>
+    <div class="rules"><div class="rule"><b>The Master</b> takes the first place at the head.</div><div class="rule"><b>Conversation</b> only happens between neighbours.</div><div class="rule"><b>Mrs Ellery</b> introduces whoever sits on her left to whoever sits on her right.</div></div>
+    <p class="muted">Tap a card, then another, to swap them.</p>
+    <div class="table">${d.map((p,i)=>`<button class="seat${i===0?" fixed":""}${ui.sel===i?" sel":""}" data-seat="${i}" ${i===0?'aria-disabled="true"':""}><span class="no">Place ${i+1}</span><span class="nm">${esc(P[p].name)}</span><span class="ds">${esc(P[p].desc)}</span></button>`).join("")}</div>
+    <div><span class="label">Who will talk to whom tonight</span><div class="talks" style="margin-top:6px">${[...m.entries()].map(([k,how])=>{const [a,b]=k.split("-");return `<span class="chip${how.startsWith("intro")?" intro":""}">${esc(P[a].name)} & ${esc(P[b].name)}${how.startsWith("intro")?" (introduced)":""}</span>`;}).join("")}</div></div>
+    <div class="row"><button class="btn" id="serve">Serve dinner</button><button class="btn ghost" id="hist">Reset to the original seating</button></div>`,
+  sc=>{
+    sc.querySelector(".x").onclick=()=>{ui.sel=null;closeSheet();};
+    sc.querySelectorAll("[data-seat]").forEach(el=>el.onclick=()=>{const i=+el.dataset.seat; if(i===0) return;
+      if(ui.sel==null) ui.sel=i; else if(ui.sel===i) ui.sel=null; else {const t=d[i];d[i]=d[ui.sel];d[ui.sel]=t;ui.sel=null;} openDinner();});
+    sc.querySelector("#hist").onclick=()=>{S.draftSeats=HIST_SEATS.slice();ui.sel=null;openDinner();};
+    sc.querySelector("#serve").onclick=()=>{
+      const evs=[...m.entries()].map(([k,how])=>{const [a,b]=k.split("-");
+        return how.startsWith("intro")?`Mrs Ellery leans across: “${P[a].name}, you simply must know ${P[b].name}.” They talk until the port.`:`${P[a].name} and ${P[b].name} talk across the turbot.`;});
+      commitTrip("Dinner: "+d.map(p=>P[p].name.split(" ").pop()).join(", "),()=>{S.seats=d.slice();},"The soup goes up. You watch from the servery door.",evs);
+    };
   });
-  app.querySelector("#back").onclick=()=>{S.screen="present";S.sel=null;render();};
-  app.querySelector("#hist").onclick=()=>{S.draft=HIST_SEATS.slice();S.sel=null;render();};
-  app.querySelector("#serve").onclick=()=>{
-    const evs=[...m.entries()].map(([k,how])=>{const [a,b]=k.split("-");
-      return {t: how.startsWith("intro") ? `Mrs Ellery leans across: “${P[a].name}, you simply must know ${P[b].name}.” They talk until the port.` : `${P[a].name} and ${P[b].name} talk across the turbot.`, bad:false};});
-    commitTrip("Dinner: "+d.map(p=>P[p].name.split(" ").pop()).join(", "), ()=>{S.seats=d.slice();},
-      "The soup goes up. You watch from the servery door.", evs);
-  };
 }
 
 // ----- Bath planner -----
-function bathProblems(c){
-  const out=[];
+function bathProblems(c){const out=[];
   if(c.indexOf("Q")>1) out.push("Miss Quill must speak in the morning. She has a noon train to catch for her dig.");
   if(c.indexOf("D")%2!==0) out.push("Mr Dunmore's engine only fits in the Ball Room.");
-  return out;
-}
-function renderBath(){
-  const c=S.draft, probs=bathProblems(c), r=bathMeet(c);
-  const cell=i=>`<button class="cell${S.sel===i?" sel":""}" data-cell="${i}"><span class="nm">${esc(P[c[i]].name)}</span><span class="tk">${esc(P[c[i]].talk)}</span></button>`;
-  app.innerHTML=`
-  <div class="top"><div><span class="label">September 1888 · the Assembly Rooms, Bath</span><h1>British Association: the programme</h1>
-    <p class="sub">You are the clerk. The printer wants the timetable by tonight.</p></div>
-    <button class="btn ghost" id="back">Return without changing anything</button></div>
-  <p class="briefing">Six talks, three sessions, two rooms. Tap a talk, then tap another to swap them.</p>
-  <div class="rules">
-    <div class="rule"><b>Speakers</b> cannot attend another talk in their own session.</div>
-    <div class="rule"><b>When free</b>, each speaker goes to a talk they are keen on. If keen on both, they choose the bigger <b>Ball Room</b>.</div>
-    <div class="rule"><b>If keen on neither</b>, they take the waters at the <b>Pump Room</b>, and everyone there meets.</div>
-  </div>
-  <div class="panel" style="overflow-x:auto"><div class="prog">
-    <span></span><span class="h">Ball Room</span><span class="h">Octagon</span>
-    ${SESS.map((s,i)=>`<span class="sess">${s}</span>${cell(2*i)}${cell(2*i+1)}`).join("")}
-  </div>
-  ${probs.map(p=>`<p class="warn">${esc(p)}</p>`).join("")}</div>
-  <div class="panel"><span class="label">Speakers' letters to the clerk</span>
-    <div class="letters">${Object.keys(KEEN).map(x=>`<div class="letter"><span class="who">${esc(P[x].name)}, ${esc(P[x].desc)}</span><br>I very much hope to hear ${KEEN[x].map(y=>esc(P[y].name)).join(" and ")}.</div>`).join("")}</div></div>
-  <div class="panel"><span class="label">Who will meet whom</span>
-    <div class="talks">${[...r.m.entries()].map(([k,how])=>{const [a,b]=k.split("-");return `<span class="chip${how.startsWith("Pump")?" intro":""}">${esc(P[a].name)} & ${esc(P[b].name)} (${esc(how)})</span>`;}).join("")}</div></div>
-  <div class="row"><button class="btn" id="print" ${probs.length?"disabled":""}>Send the programme to the printer</button><button class="btn ghost" id="hist">Reset to the original programme</button></div>`;
-  app.querySelectorAll("[data-cell]").forEach(el=>el.onclick=()=>{
-    const i=+el.dataset.cell;
-    if(S.sel===null||S.sel===undefined) S.sel=i;
-    else if(S.sel===i) S.sel=null;
-    else{const t=c[i];c[i]=c[S.sel];c[S.sel]=t;S.sel=null;}
-    render();
+  return out;}
+function openBath(){
+  const c=S.draftSched||(S.draftSched=S.sched.slice()), probs=bathProblems(c), r=bathMeet(c);
+  const cell=i=>`<button class="cell${ui.sel===i?" sel":""}" data-cell="${i}"><span>${esc(P[c[i]].name)}</span><span class="tk">${esc(P[c[i]].talk)}</span></button>`;
+  openSheet(`<div class="head"><div><span class="label">The clerk's desk</span><h2>The programme</h2></div><button class="x">Leave the desk</button></div>
+    <div class="rules"><div class="rule"><b>Speakers</b> can't attend another talk in their own session.</div><div class="rule"><b>When free</b>, each speaker goes to a talk they're keen on. If keen on both, they choose the bigger <b>Ball Room</b>.</div><div class="rule"><b>If keen on neither</b>, they go to the <b>Pump Room</b>, and everyone there meets.</div></div>
+    <p class="muted">Tap a talk, then another, to swap them.</p>
+    <div style="overflow-x:auto"><div class="prog"><span></span><span class="h">Ball Room</span><span class="h">Octagon</span>${SESS.map((s,i)=>`<span class="sess">${s}</span>${cell(2*i)}${cell(2*i+1)}`).join("")}</div></div>
+    ${probs.map(p=>`<p class="warn">${esc(p)}</p>`).join("")}
+    <div><span class="label">Speakers' letters on your desk</span><div class="letters" style="margin-top:6px">${Object.keys(KEEN).map(x=>`<div class="letter"><span class="who">${esc(P[x].name)}, ${esc(P[x].desc)}</span><br>I very much hope to hear ${KEEN[x].map(y=>esc(P[y].name)).join(" and ")}.</div>`).join("")}</div></div>
+    <div><span class="label">Who will meet whom</span><div class="talks" style="margin-top:6px">${[...r.m.entries()].map(([k,how])=>{const [a,b]=k.split("-");return `<span class="chip${how.startsWith("Pump")?" intro":""}">${esc(P[a].name)} & ${esc(P[b].name)} (${esc(how)})</span>`;}).join("")}</div></div>
+    <div class="row"><button class="btn" id="print" ${probs.length?"disabled":""}>Send the programme to the printer</button><button class="btn ghost" id="hist">Reset to the original programme</button></div>`,
+  sc=>{
+    sc.querySelector(".x").onclick=()=>{ui.sel=null;closeSheet();};
+    sc.querySelectorAll("[data-cell]").forEach(el=>el.onclick=()=>{const i=+el.dataset.cell;
+      if(ui.sel==null) ui.sel=i; else if(ui.sel===i) ui.sel=null; else {const t=c[i];c[i]=c[ui.sel];c[ui.sel]=t;ui.sel=null;} openBath();});
+    sc.querySelector("#hist").onclick=()=>{S.draftSched=HIST_SCHED.slice();ui.sel=null;openBath();};
+    const pr=sc.querySelector("#print"); if(!probs.length) pr.onclick=()=>{
+      const evs=r.where.map((w,i)=>{const parts=[`${SESS[i]}: ${P[w.ball].name} in the Ball Room, ${P[w.oct].name} in the Octagon.`];
+        if(w.toBall.length) parts.push(`${w.toBall.map(x=>P[x].name).join(", ")} ${w.toBall.length>1?"crowd":"crowds"} into the Ball Room.`);
+        if(w.toOct.length) parts.push(`${w.toOct.map(x=>P[x].name).join(", ")} ${w.toOct.length>1?"slip":"slips"} into the Octagon.`);
+        if(w.pump.length) parts.push(`${w.pump.map(x=>P[x].name).join(", ")} ${w.pump.length>1?"take":"takes"} the waters at the Pump Room.`);
+        return parts.join(" ");});
+      commitTrip("Bath: "+SESS.map((s,i)=>s[0]+" "+P[c[2*i]].name.split(" ").pop()+"/"+P[c[2*i+1]].name.split(" ").pop()).join(", "),()=>{S.sched=c.slice();},"The programme is printed. You spend the meeting at the clerk's desk, watching.",evs);
+    };
   });
-  app.querySelector("#back").onclick=()=>{S.screen="present";S.sel=null;render();};
-  app.querySelector("#hist").onclick=()=>{S.draft=HIST_SCHED.slice();S.sel=null;render();};
-  const pr=app.querySelector("#print"); if(!probs.length) pr.onclick=()=>{
-    const evs=r.where.map((w,i)=>{
-      const parts=[`${SESS[i]}: ${P[w.ball].name} in the Ball Room, ${P[w.oct].name} in the Octagon.`];
-      if(w.toBall.length) parts.push(`${w.toBall.map(x=>P[x].name).join(", ")} ${w.toBall.length>1?"crowd":"crowds"} into the Ball Room.`);
-      if(w.toOct.length) parts.push(`${w.toOct.map(x=>P[x].name).join(", ")} ${w.toOct.length>1?"slip":"slips"} into the Octagon.`);
-      if(w.pump.length) parts.push(`${w.pump.map(x=>P[x].name).join(", ")} ${w.pump.length>1?"take":"takes"} the waters at the Pump Room.`);
-      return {t:parts.join(" "),bad:false};});
-    commitTrip("Bath: "+SESS.map((s,i)=>s[0]+" "+P[c[2*i]].name.split(" ").pop()+"/"+P[c[2*i+1]].name.split(" ").pop()).join(", "), ()=>{S.sched=c.slice();},
-      "The programme is printed. You spend the meeting at the clerk's desk, watching.", evs);
-  };
 }
 
 function commitTrip(label,apply,opening,evs){
-  S.prevVisible=visible(simulate(S)).map(i=>i.id);
-  apply(); S.trips++; S.hint=0;
-  const sim=simulate(S);
-  S.log.push({label,seats:S.seats.slice(),sched:S.sched.slice(),engine:sim.engine,standing:sim.engine?0:ROOMS.length-sim.lost.size});
-  S.interlude={opening,evs};
-  S.screen="interlude"; S.sel=null; render(); window.scrollTo(0,0);
+  S.prevVisible=visible(sim()).map(i=>i.id);
+  apply(); S.trips++; S.hint=0; ui.sel=null;
+  const sm=sim();
+  S.log.push({label,seats:S.seats.slice(),sched:S.sched.slice(),engine:sm.engine,standing:sm.engine?0:ROOMS.length-sm.lost.size});
+  openSheet(`<div class="interlude"><span class="label">The past</span><p>${esc(opening)}</p>${evs.map(e=>`<p class="ev">${esc(e)}</p>`).join("")}
+    <p class="muted">Then the lamps gutter, the room tilts, and you are standing beside the lectern in the Old Schools Quadrangle again.</p>
+    <div class="row"><button class="btn" id="ret">See what the present has become</button></div></div>`,
+  sc=>sc.querySelector("#ret").onclick=()=>{
+    closeSheet(true); S.era="present"; S.pos.present={...SPAWN.present,dir:"up"}; render();
+    const s2=sim(); if(!s2.engine&&s2.lost.size===0) openWin();
+  });
 }
-function renderInterlude(){
-  const it=S.interlude||{opening:"",evs:[]};
-  app.innerHTML=`<div class="interlude fade"><span class="label">The past</span><p>${esc(it.opening)}</p>
-    ${it.evs.map(e=>`<p class="ev">${esc(e.t)}</p>`).join("")}
-    <p class="muted">Then the lamps gutter, the room tilts, and you are standing on Broad Street again.</p>
-    <div class="row"><button class="btn" id="ret">See what the present has become</button></div></div>`;
-  app.querySelector("#ret").onclick=()=>{
-    const sim=simulate(S);
-    S.room = (sim.engine||!S.prevVisible) ? "archive" : S.room;
-    S.screen = (!sim.engine&&sim.lost.size===0) ? "won" : "present";
-    render(); window.scrollTo(0,0);
-  };
-}
-function renderWon(){
-  const sim=simulate(S);
-  app.innerHTML=`<div class="title-screen fade"><span class="label">The present · after ${S.trips} trips</span>
-    <h1>The library stands</h1>${fragmentHTML(sim)}
-    <p class="lede">Rev. Carrow and Mr Dunmore never met. The Radcliffe Camera, Duke Humfrey's Library, the Divinity School, the Old Schools Quadrangle and the Clarendon Building are all where they should be, and full of books that some of them would never have been written without you.</p>
+function openWin(){
+  openSheet(`<div class="head"><div><span class="label">The present · after ${S.trips} trips</span><h2>The library stands</h2></div><button class="x">Walk the shelves</button></div>
+    <p class="lede" style="font-family:var(--f-book);font-size:1.15rem">Rev. Carrow and Mr Dunmore never met. The Radcliffe Camera, Duke Humfrey's Library, the Divinity School, the Old Schools Quadrangle and the Clarendon Building are all where they should be, full of books that some of them would never have been written without you.</p>
     <p class="muted">This is the end of chapter one. The story of Mr A and Mr B is a placeholder for now.</p>
-    <div class="row"><button class="btn" id="walk">Walk the shelves</button><button class="btn ghost" id="again">Play again from the ruins</button></div></div>`;
-  app.querySelector("#walk").onclick=()=>{S.screen="present";render();};
-  app.querySelector("#again").onclick=()=>{S=fresh();S.screen="present";render();};
+    <div class="row"><button class="btn ghost" id="again">Play again from the ruins</button></div>`,
+  sc=>{sc.querySelector(".x").onclick=()=>closeSheet(); sc.querySelector("#again").onclick=()=>{closeSheet(true);S=fresh();S.screen="world";render();};});
+}
+function openCasebook(){
+  const sm=sim(), hints=hintsFor(sm);
+  openSheet(`<div class="head"><div><span class="label">Everything you have learned</span><h2>Casebook</h2></div><button class="x">Close</button></div>
+    <p class="muted">Every timeline you've made. Restoring one puts the past back the way it was on that trip. You'll find yourself back at the lectern.</p>
+    <div class="log">${S.log.length?S.log.map((l,i)=>`<div class="entry"><span class="n">${i+1}</span><span class="what">${esc(l.label)} <span class="muted">· ${l.engine?"library destroyed":l.standing+"/"+ROOMS.length+" standing"}</span></span><button data-restore="${i}">Restore</button></div>`).join(""):`<p class="empty">No trips yet.</p>`}</div>
+    <label class="label" for="notes">Your notes</label>
+    <textarea id="notes" placeholder="Who is Mr A? Who is Mr B? Which pairs are dangerous?">${esc(S.notes)}</textarea>
+    <p class="muted">Stuck? Find Miss Harker, the archivist, in the College Archive in the present.</p>
+    <div class="row"><button class="btn ghost small" id="title">Title screen</button></div>`,
+  sc=>{
+    sc.querySelector(".x").onclick=()=>closeSheet();
+    const n=sc.querySelector("#notes"); n.oninput=()=>{S.notes=n.value;save();};
+    sc.querySelector("#title").onclick=()=>{closeSheet(true);S.screen="title";render();};
+    sc.querySelectorAll("[data-restore]").forEach(el=>el.onclick=()=>{
+      const l=S.log[+el.dataset.restore]; S.prevVisible=visible(sim()).map(i=>i.id);
+      S.seats=l.seats.slice(); S.sched=l.sched.slice(); S.hint=0;
+      S.log.push(Object.assign({},l,{label:"Restored timeline "+(+el.dataset.restore+1)}));
+      closeSheet(true); S.era="present"; S.pos.present={...SPAWN.present,dir:"up"}; render();
+    });
+  });
 }
 
-window.__game={simulate,dinnerMeet,bathMeet,HAZ,ITEMS,get S(){return S;}};
+window.__game={get S(){return S;},interact,openDinner,openBath,travel,
+  teleport(x,y,dir){player.x=player.fx=x;player.y=player.fy=y;player.dir=dir||player.dir;path=[];}};
 render();
 })();
 </script>

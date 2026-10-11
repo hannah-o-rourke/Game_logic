@@ -5,20 +5,14 @@ const path = require("path");
 const vm = require("vm");
 
 const html = fs.readFileSync(path.join(__dirname, "..", "index.html"), "utf8");
-const script = html.match(/<script>([\s\S]*?)<\/script>/)[1];
+const script = html.match(/<script id="logic">([\s\S]*?)<\/script>/)[1];
 
-// Just enough of a browser for the game script to boot.
-const el = () => ({ innerHTML: "", querySelector: () => el(), querySelectorAll: () => [], addEventListener() {} });
+// The logic script draws nothing, so it only needs a window to attach to.
 const window = {};
-const ctx = {
-  window,
-  document: { getElementById: el, addEventListener() {}, body: el() },
-  localStorage: { getItem: () => null, setItem() {} },
-  scrollTo() {},
-};
+const ctx = { window };
 vm.createContext(ctx);
 vm.runInContext(script, ctx);
-const g = window.__game;
+const g = window.GameLogic;
 
 const perms = a => a.length <= 1 ? [a] : a.flatMap((x, i) => perms([...a.slice(0, i), ...a.slice(i + 1)]).map(p => [x, ...p]));
 const seatings = perms(["B", "C", "D", "E", "F"]).map(p => ["A", ...p]);
